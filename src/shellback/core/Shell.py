@@ -69,8 +69,8 @@ class Shell(ABC):
             execution_time = time.perf_counter() - start_time
             
             result = CommandResult(
-                stdout=process.stdout,
-                stderr=process.stderr,
+                standand_output=process.stdout,
+                standand_error=process.stderr,
                 return_code=process.returncode,
                 execution_time=execution_time,
                 command_sent=final_args
