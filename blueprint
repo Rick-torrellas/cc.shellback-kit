@@ -1,0 +1,172 @@
+vamos a empezar a crear esta libreria, vamos a empezar con la shell madre.
+
+en python
+
+la funcion de la liberia es crear un conjunto de herramientas para el usuario, si el usuario esta en windows y decide usar la clase bash. ese es su problema.
+
+# la shell madre
+
+*  El problema del "State Leak": Mejora: Define un timeout por defecto en la interfaz ABC de la Shell Hija para evitar que scripts automatizados se queden colgados eternamente.
+Implementación de Timeout: No lo dejes solo en la interfaz; asegúrate de que el método run de la Shell lo use en el subprocess.run(..., timeout=self.default_timeout).
+
+* El Patrón Strategy es perfecto aquí. La "Shell Madre" (Contexto) no necesita saber si está hablando con Bash o PowerShell; solo necesita que la "Shell Hija" sepa cómo formatear y lanzar el comando.
+
+* Define una Interfaz (ABC) para que todas las shells hijas sigan el mismo contrato.
+
+* sera capaz de ejecutar varios comandos en orden, creando asi un script, permitiendo que varias comandos puedan complementarse
+
+* Async Support Considera añadir ejecución asíncrona para operaciones I/O bound:
+    
+# la shell hija bash,batch,powershell
+
+* Detección de binarios
+En la Shell Hija, antes de ejecutar, usa shutil.which(comando) para verificar si el binario existe en el PATH del sistema. Si no existe, lanza una excepción clara (CommandNotFoundError) antes de intentar invocar al subproceso.
+Usar shutil.which es correcto, pero hazlo Lazy. No verifiques todos los comandos al iniciar la shell, verifícalos justo antes de ejecutar el comando específico en el método run. Esto ahorra recursos si el usuario define 50 comandos pero solo ejecuta 2.
+
+* se puede aplicar un patron Patrón Strategy
+    el comando le dara a la shell el comando y una lista de argumentos definidios segun una estructura, y segun la shell se transformara esos argumentos en una cosa u otra  no es lo mismo ejecutar cd en bash que en cmd, entonces la logica del argument builder se ejecuta tambien en el shell.
+
+# clase comando, se creara una clase para ejecutar comandos.
+
+* el commando usa la clase de argumentos para recibir los argumentos.
+
+* el resutado de cada comando sera el objeto en si.
+
+* Lazy Execution: El comando no debería ejecutarse al instanciarse. El objeto Comando construye la sentencia, y es la Shell quien decide cuándo "disparar".
+
+# Context 
+
+una clase para facilitar la creacion  y el seguimmiento del contexto entre comandos, ussado por los shells.
+
+* Persistencia por Encadenamiento: La "Shell Madre" mantiene un registro del cwd (directorio actual) y variables de entorno, inyectándolos en cada llamada de subprocess.run(..., cwd=self.current_dir). 
+
+* Cada comando es independiente, pero la Shell Madre le inyecta el cwd y env en cada subprocess.run. Es más robusto y fácil de testear.
+Implementa un método chroot o cd virtual dentro de la Shell que actualice el SessionContext. Como subprocess.run no persiste el directorio entre llamadas, tu Shell debe inyectar siempre el cwd actual en cada comando.
+
+class SessionContext:
+    current_working_directory: Path
+    env: dict
+    encoding: str = "utf-8"
+
+# Argumentos (Argument Builder)
+
+* sera usado tanto por Command como por las shells para lidiar con la logica de los argumentos.
+
+* Para evitar errores de escape de shell (especialmente en Windows vs Linux), te sugiero que el ArgumentBuilder no genere un string final, sino una lista de argumentos.
+
+Seguridad: Al usar subprocess.run(lista_args), Python se encarga de escapar espacios y caracteres especiales de forma segura, evitando inyecciones.
+
+Abstracción de Flags: Podrías implementar un método que convierta diccionarios de Python en flags de shell:
+
+podrías añadir una capa de Mapping de Flags sin romper tu regla de "no conversión de lógica".
+
+Sugerencia: Crea un FlagStyle en el ArgumentBuilder.
+
+Style.UNIX: --verbose, -v
+
+Style.MS: /v, /verbose
+
+* Implementa un sistema de mapeo de estilos. No todas las shells usan --flag. Algunas usan /flag (CMD) o -flag (Go-style).
+
+# loger 
+
+es manejado en la shell, con un argumento de ejecucion, permite al usuario dotar de la capacidad de ver el resultado de la ejecucion de su script.
+
+* Sugerencia: Añade un NullLogger (una implementación que no hace nada) por defecto. Así, si el usuario no provee un logger, la librería no falla ni necesita if self.logger: en cada línea; simplemente llama a los métodos del NullLogger.
+
+class Logger(ABC):
+    """Defines the interface for any logger that the application can use.
+
+    This abstract base class establishes the contract that all logger
+    implementations must follow, enabling dependency inversion and
+    allowing different logging backends to be swapped without affecting
+    application code.
+    """
+
+    @abstractmethod
+    def info(self, message: str):
+        """Log an informational message.
+
+        Args:
+            message: The string content to log at INFO level
+        """
+        pass
+
+    @abstractmethod
+    def debug(self, message: str):
+        """Log a debug message for detailed diagnostic information.
+
+        Args:
+            message: The string content to log at DEBUG level
+        """
+        pass
+
+    @abstractmethod
+    def warning(self, message: str):
+        """Log a warning message indicating potential issues.
+
+        Args:
+            message: The string content to log at WARNING level
+        """
+        pass
+
+    @abstractmethod
+    def error(self, message: str):
+        """Log an error message for runtime errors or exceptions.
+
+        Args:
+            message: The string content to log at ERROR level
+        """
+        pass
+
+
+# Command Result
+
+* Si quieres facilitar la creación de Pipes, el CommandResult debería ser inyectable en el siguiente Command.
+
+Mejora de Implementación:
+
+Python
+# Permitir que un comando reciba el output de otro
+cmd1 = Command("cat", "data.json")
+cmd2 = Command("grep", "error")
+
+# En la Shell
+res1 = sh.run(cmd1)
+res2 = sh.run(cmd2, input_data=res1.standard_output)
+
+class CommandResult:
+    standard_output: str
+    standard_error: str
+    standard_input: str
+    execution_time: float
+    return_code: int
+    
+    def is_success(self) -> bool:
+        return self.return_code == 0
+    
+    def json(self):
+        # Util para comandos que devuelven JSON
+        return json.loads(self.standard_output)
+    
+
+# la forma final de ejecucucion.
+
+inicias un shell por ejemplo
+
+
+with Bash(persist_session=True) as sh:
+    cmd = Comando("ls").add_args("-la")
+    res = sh.run(cmd)
+    result = sh.run(cmd1) | sh.run(cmd2) 
+    
+    if res.is_success():
+        print(f"Archivos: {res.stdout}")
+
+con esta syntaxis podemos facilitarnos la creacion de pipes y demas ya que el comando puede ser usando por python y usar su syntaxis superior en vez de tratar de traer syntaxis de shells espesificas.
+
+tambien cada comando es ejecutado segun la shell, la shell no tiene que hacer converciones de comandos si hacees un sudo en poweshell, es tu problema, la shell no hara la convercion de logica, solo lo ejecutara
+
+
+
+
