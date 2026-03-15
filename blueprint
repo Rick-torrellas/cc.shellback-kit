@@ -2,8 +2,6 @@ vamos a empezar a crear esta libreria, vamos a empezar con la shell madre.
 
 en python
 
-la funcion de la liberia es crear un conjunto de herramientas para el usuario, si el usuario esta en windows y decide usar la clase bash. ese es su problema.
-
 # la shell madre
 
 *  El problema del "State Leak": Mejora: Define un timeout por defecto en la interfaz ABC de la Shell Hija para evitar que scripts automatizados se queden colgados eternamente.

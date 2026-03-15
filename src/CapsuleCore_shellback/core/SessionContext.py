@@ -4,7 +4,7 @@ from typing import Dict
 
 @dataclass(frozen=True)
 class SessionContext:
-    """Mantiene el estado persistente entre ejecuciones de la Shell."""
+    """Maintains persistent state across Shell executions."""
     cwd: Path = field(default_factory=Path.cwd)
     env: Dict[str, str] = field(default_factory=dict)
     encoding: str = "utf-8"
