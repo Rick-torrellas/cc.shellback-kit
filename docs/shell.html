@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shell Class Documentation</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>📚 Shell Class Documentation</h1>
+    
+    <h2>Overview</h2>
+    <p>
+        The <code>Shell</code> class is an abstract base class (ABC) that provides a framework for executing shell commands 
+        with consistent logging, context management, and error handling. It implements the Template Method pattern for 
+        command execution and allows different shell implementations to define their own command formatting strategies.
+    </p>
+
+    <h2>Class: <code>Shell</code></h2>
+    
+    <h3>Inheritance</h3>
+    <ul>
+        <li>Inherits from <code>ABC</code> (Abstract Base Class)</li>
+    </ul>
+
+    <h3>Constructor Parameters</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Parameter</th>
+                <th>Type</th>
+                <th>Description</th>
+                <th>Default</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>context</code></td>
+                <td>Optional[SessionContext]</td>
+                <td>Session context containing working directory and environment variables</td>
+                <td><code>SessionContext()</code></td>
+            </tr>
+            <tr>
+                <td><code>logger</code></td>
+                <td>Optional[Logger]</td>
+                <td>Logger instance for recording operations</td>
+                <td><code>NullLogger()</code></td>
+            </tr>
+            <tr>
+                <td><code>default_timeout</code></td>
+                <td>float</td>
+                <td>Default timeout for command execution in seconds</td>
+                <td><code>30.0</code></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Attributes</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Attribute</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>context</code></td>
+                <td>SessionContext</td>
+                <td>The session context for command execution</td>
+            </tr>
+            <tr>
+                <td><code>logger</code></td>
+                <td>Logger</td>
+                <td>Logger instance for recording operations</td>
+            </tr>
+            <tr>
+                <td><code>default_timeout</code></td>
+                <td>float</td>
+                <td>Default timeout value for command execution</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Abstract Methods</h3>
+    
+    <div class="method-signature">
+        <code>_format_command(executable: str, args: list[str]) -> list[str]</code>
+    </div>
+    <p>
+        Abstract method that must be implemented by child classes to define how the final command list should be formatted 
+        (Strategy pattern).
+    </p>
+    
+    <h4>Parameters:</h4>
+    <ul>
+        <li><code>executable</code> (str): The executable/command to run</li>
+        <li><code>args</code> (list[str]): List of command arguments</li>
+    </ul>
+    
+    <h4>Returns:</h4>
+    <ul>
+        <li><code>list[str]</code>: Formatted command list ready for execution</li>
+    </ul>
+
+    <h3>Public Methods</h3>
+
+    <h4><code>__enter__() -> Shell</code></h4>
+    <p>Context manager entry method. Logs the start of a shell session.</p>
+    
+    <h5>Returns:</h5>
+    <ul>
+        <li><code>Shell</code>: The shell instance</li>
+    </ul>
+    
+    <h5>Logging:</h5>
+    <ul>
+        <li>Info: "Iniciando sesión de {ShellClassName}"</li>
+    </ul>
+
+    <h4><code>__exit__(exc_type, exc_val, exc_tb)</code></h4>
+    <p>Context manager exit method. Logs session termination, including any errors that occurred.</p>
+    
+    <h5>Parameters:</h5>
+    <ul>
+        <li><code>exc_type</code>: Exception type if an error occurred</li>
+        <li><code>exc_val</code>: Exception value if an error occurred</li>
+        <li><code>exc_tb</code>: Exception traceback if an error occurred</li>
+    </ul>
+    
+    <h5>Logging:</h5>
+    <ul>
+        <li>Error: "Sesión finalizada con error: {exc_val}" (if exception occurred)</li>
+        <li>Info: "Sesión de {ShellClassName} finalizada correctamente" (if no exception)</li>
+    </ul>
+    
+    <div class="note">
+        <strong>Note:</strong> Does not suppress exceptions (returns <code>None</code>)
+    </div>
+
+    <h4><code>run(command, timeout: Optional[float] = None) -> CommandResult</code></h4>
+    <p>Template method that coordinates the command execution process.</p>
+    
+    <h5>Parameters:</h5>
+    <ul>
+        <li><code>command</code>: Command object containing executable and arguments</li>
+        <li><code>timeout</code> (Optional[float]): Custom timeout in seconds. If not provided, uses <code>default_timeout</code></li>
+    </ul>
+    
+    <h5>Returns:</h5>
+    <ul>
+        <li><code>CommandResult</code>: Object containing command execution results</li>
+    </ul>
+    
+    <h5>Process Flow:</h5>
+    <ol>
+        <li><strong>Lazy Binary Check</strong>: Verifies if the executable exists in PATH</li>
+        <li><strong>Command Formatting</strong>: Calls <code>_format_command()</code> to prepare the final command list</li>
+        <li><strong>Execution</strong>: Runs the command using <code>subprocess.run()</code> with:
+            <ul>
+                <li>Working directory from context</li>
+                <li>Environment variables from context</li>
+                <li>Captured stdout/stderr</li>
+                <li>Specified encoding</li>
+                <li>Timeout control</li>
+            </ul>
+        </li>
+        <li><strong>Result Processing</strong>: Creates and returns a <code>CommandResult</code> object</li>
+    </ol>
+    
+    <h5>Exceptions:</h5>
+    <ul>
+        <li><code>CommandNotFoundError</code>: Raised when the executable is not found in PATH</li>
+        <li><code>subprocess.TimeoutExpired</code>: Raised when command execution exceeds timeout</li>
+    </ul>
+    
+    <h5>Logging:</h5>
+    <ul>
+        <li>Debug: "Executing: {command} in {working_directory}"</li>
+        <li>Info: "Success: {executable}" (if command succeeds)</li>
+        <li>Warning: "Failed: {executable} with code {return_code}" (if command fails)</li>
+        <li>Error: "Timeout after {timeout}s" (if timeout occurs)</li>
+    </ul>
+
+    <h3>Usage Example</h3>
+    <pre>
+# Create a concrete shell implementation
+class BashShell(Shell):
+    def _format_command(self, executable: str, args: list[str]) -> list[str]:
+        return [executable] + args
+
+# Use the shell
+with BashShell(logger=my_logger, default_timeout=60.0) as shell:
+    result = shell.run(my_command, timeout=30.0)
+    if result.is_success():
+        print(f"Output: {result.standard_output}")
+    </pre>
+
+    <h2>Design Patterns Used</h2>
+    
+    <div class="pattern-box">
+        <h4>1. Abstract Base Class</h4>
+        <p>Provides a common interface for different shell implementations</p>
+    </div>
+    
+    <div class="pattern-box">
+        <h4>2. Template Method</h4>
+        <p>The <code>run()</code> method defines the skeleton of the command execution algorithm</p>
+    </div>
+    
+    <div class="pattern-box">
+        <h4>3. Strategy Pattern</h4>
+        <p>The <code>_format_command()</code> abstract method allows different shell implementations to define their own formatting strategies</p>
+    </div>
+
+    <h2>Dependencies</h2>
+    <ul>
+        <li><code>subprocess</code>: For command execution</li>
+        <li><code>shutil</code>: For binary path checking</li>
+        <li><code>time</code>: For execution time measurement</li>
+        <li><code>abc</code>: For abstract base class functionality</li>
+    </ul>
+</body>
+</html>
