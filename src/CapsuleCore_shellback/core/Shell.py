@@ -2,8 +2,7 @@ from abc import ABC, abstractmethod
 import shutil
 import time
 import subprocess
-from .Logger import Logger  # Asumiendo que usas tu interfaz de Logger
-from ..capsule import NullLogger
+from CapsuleCore_logger import Logger, NullLogger
 from .SessionContext import SessionContext
 from .CommandResult import CommandResult
 from typing import Optional
