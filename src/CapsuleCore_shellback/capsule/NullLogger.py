@@ -1,10 +1,12 @@
 from ..core import Logger
 
+
 class NullLogger(Logger):
     """
     'Null Object' pattern implementation.
     Performs no actions, allowing the Shell to function without constant null checks.
     """
+
     def info(self, message: str):
         """No-op informational logging."""
         pass

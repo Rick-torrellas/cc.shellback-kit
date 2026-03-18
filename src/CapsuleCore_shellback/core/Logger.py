@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+
 class Logger(ABC):
     """Defines the interface for any logger that the application can use.
 

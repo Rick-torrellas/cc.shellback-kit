@@ -2,18 +2,20 @@ import sys
 from datetime import datetime
 from ..core import Logger
 
+
 class ConsoleLogger(Logger):
     """
     Logger implementation that prints to standard output with colors and timestamps.
     Ideal for development and interactive scripts.
     """
+
     # ANSI color codes for terminal output formatting
     COLORS = {
-        "DEBUG": "\033[94m",    # Blue
-        "INFO": "\033[92m",     # Green
+        "DEBUG": "\033[94m",  # Blue
+        "INFO": "\033[92m",  # Green
         "WARNING": "\033[93m",  # Yellow
-        "ERROR": "\033[91m",    # Red
-        "RESET": "\033[0m"      # Reset to default
+        "ERROR": "\033[91m",  # Red
+        "RESET": "\033[0m",  # Reset to default
     }
 
     def _log(self, level: str, message: str):
@@ -21,7 +23,7 @@ class ConsoleLogger(Logger):
         timestamp = datetime.now().strftime("%H:%M:%S")
         color = self.COLORS.get(level, self.COLORS["RESET"])
         reset = self.COLORS["RESET"]
-        
+
         # Format: [14:30:05] [INFO] Message
         print(f"[{timestamp}] {color}[{level}]{reset} {message}", file=sys.stderr)
 
