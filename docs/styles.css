@@ -1,0 +1,211 @@
+:root {
+    --primary-color: #2563eb;
+    --bg-color: #f8fafc;
+    --text-color: #1e293b;
+    --code-bg: #f1f5f9;
+    --border-color: #e2e8f0;
+    --accent-color: #0f172a;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--bg-color);
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+h1 {
+    font-size: 2.5rem;
+    color: var(--accent-color);
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 10px;
+}
+
+h2 {
+    font-size: 1.8rem;
+    margin-top: 40px;
+    color: var(--accent-color);
+    border-left: 5px solid var(--primary-color);
+    padding-left: 15px;
+}
+
+h3 {
+    font-size: 1.2rem;
+    background: var(--code-bg);
+    padding: 10px;
+    border-radius: 6px;
+    font-family: 'Fira Code', monospace;
+    color: var(--primary-color);
+}
+
+code {
+    background-color: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 0.9em;
+    color: #d63384;
+}
+
+h3 code {
+    color: inherit;
+    background: none;
+    padding: 0;
+}
+
+ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+ul li {
+    margin-bottom: 10px;
+    padding-left: 20px;
+    position: relative;
+}
+
+ul li::before {
+    content: "•";
+    color: var(--primary-color);
+    font-weight: bold;
+    position: absolute;
+    left: 0;
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background: var(--border-color);
+    margin: 40px 0;
+}
+
+.inheritance {
+    font-style: italic;
+    color: #64748b;
+    margin-bottom: 20px;
+}
+
+/* Contenedor para parámetros */
+ul ul {
+    margin-top: 10px;
+    border-left: 2px solid var(--border-color);
+    padding-left: 20px;
+}
+
+/* Badge para clases abstractas */
+.badge {
+    background-color: #eab308; /* Dorado/Amarillo */
+    color: #422006;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+/* Nota informativa */
+.note {
+    background-color: #eff6ff;
+    border-left: 4px solid #3b82f6;
+    padding: 15px;
+    font-size: 0.95rem;
+    color: #1e40af;
+    margin-bottom: 30px;
+}
+
+/* Tarjeta para cada método */
+.method-card {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 25px;
+    background: white;
+    transition: transform 0.2s ease;
+}
+
+.method-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.args {
+    margin-top: 15px;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 4px;
+}
+
+.args strong {
+    color: #64748b;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+
+/* Badge variante para utilidad */
+.badge-utility {
+    background-color: #10b981; /* Verde esmeralda */
+    color: white;
+}
+
+/* Nota de lógica interna */
+.logic-note {
+    font-size: 0.85rem;
+    background: #fff7ed;
+    border: 1px dashed #f97316;
+    padding: 10px;
+    margin-top: 15px;
+    border-radius: 4px;
+}
+
+/* Tabla de verdad para el filtro */
+.logic-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    font-size: 0.9rem;
+}
+
+.logic-table th, .logic-table td {
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    text-align: left;
+}
+
+.logic-table th {
+    background-color: #f1f5f9;
+}
+
+.text-success { color: #059669; font-weight: bold; }
+.text-danger { color: #dc2626; font-weight: bold; }
+
+.highlight-border {
+    border: 2px solid var(--primary-color);
+}
+.nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.nav-link {
+    display: block;
+    padding: 15px 20px;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--primary-color);
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.nav-link:hover {
+    border-color: var(--primary-color);
+    background: var(--code-bg);
+    transform: translateX(10px);
+}
