@@ -1,53 +1,68 @@
-from unittest.mock import MagicMock, patch
-
-# Ajusta 'tu_paquete' al nombre de la carpeta/módulo donde está tu código
 from CapsuleCore_shellback import Command
 
+## --- Tests de Inicialización ---
 
-class TestCommand:
-    def test_initialization(self):
-        """Verifica que el ejecutable se asigne correctamente."""
-        cmd = Command("git")
-        assert cmd.executable == "git"
-        assert cmd.builder is not None
 
-    def test_add_args_chaining(self):
-        """Verifica que add_args retorne self para permitir el encadenamiento."""
-        cmd = Command("docker")
-        result = cmd.add_args("run", "-it")
-        assert result is cmd
+def test_command_initialization():
+    """Verifica que el comando se inicialice con el ejecutable correcto."""
+    cmd = Command("ls")
+    assert cmd.executable == "ls"
+    assert cmd.args == []
 
-    @patch("CapsuleCore_shellback.capsule.Command.ArgumentBuilder")
-    def test_add_args_logic(self, mock_builder_class):
-        """Verifica que los argumentos se agreguen a la lista interna del builder."""
-        # Configuramos el mock
-        mock_instance = mock_builder_class.return_value
-        mock_instance._args = []
 
-        cmd = Command("python")
-        cmd.add_args("main.py", "--version")
+## --- Tests de Argumentos Posicionales ---
 
-        assert mock_instance._args == ["main.py", "--version"]
 
-    def test_args_property_delegation(self):
-        """Verifica que cmd.args llame al método .build() del builder."""
-        cmd = Command("ls")
-        # Inyectamos un mock en la instancia existente
-        cmd.builder = MagicMock()
-        cmd.builder.build.return_value = ["-l", "-a"]
+def test_command_add_single_arg():
+    """Verifica la adición de un único argumento posicional."""
+    cmd = Command("mkdir")
+    cmd.add_args("my_folder")
+    assert cmd.args == ["my_folder"]
 
-        # Ejecutamos
-        resultado = cmd.args
 
-        # Validamos
-        assert resultado == ["-l", "-a"]
-        cmd.builder.build.assert_called_once()
+def test_command_add_multiple_args():
+    """Verifica la adición de múltiples argumentos en una sola llamada."""
+    cmd = Command("rm")
+    cmd.add_args("-rf", "/tmp/test")
+    assert cmd.args == ["-rf", "/tmp/test"]
 
-    def test_add_multiple_calls(self):
-        """Verifica que las llamadas sucesivas a add_args sigan acumulando."""
-        cmd = Command("grep")
-        cmd.builder._args = []  # Usamos el builder real para este test si es simple
 
-        cmd.add_args("-r").add_args("pattern")
+def test_command_method_chaining():
+    """Verifica que add_args permita encadenamiento (fluent interface)."""
+    cmd = Command("git")
+    # El método debe retornar self para permitir esto
+    result = cmd.add_args("commit").add_args("-m", "feat: initial")
 
-        assert cmd.args == ["-r", "pattern"]
+    assert result is cmd
+    assert cmd.args == ["commit", "-m", "feat: initial"]
+
+
+## --- Tests de Integración con ArgumentBuilder (Flags) ---
+
+
+def test_command_with_flags():
+    """Verifica que se pueden mezclar argumentos posicionales y flags usando el builder interno."""
+    cmd = Command("curl")
+    cmd.add_args("-X", "POST")
+    # Accediendo directamente al builder para usar flags
+    cmd.builder.add_flag("header", "Content-Type: application/json")
+    cmd.add_args("http://localhost:8080")
+
+    expected = [
+        "-X",
+        "POST",
+        "--header",
+        "Content-Type: application/json",
+        "http://localhost:8080",
+    ]
+    assert cmd.args == expected
+
+
+def test_command_flag_style_persistence():
+    """Verifica que el estilo de los flags se mantiene a través del builder."""
+    cmd = Command("netstat")
+    # Cambiamos el estilo del builder interno
+    cmd.builder.style = "ms"
+    cmd.builder.add_flag("a")
+
+    assert cmd.args == ["/a"]

@@ -1,33 +1,60 @@
 import pytest
 from pathlib import Path
-from dataclasses import FrozenInstanceError
-from CapsuleCore_shellback import SessionContext  # Asegúrate de importar correctamente
+from CapsuleCore_shellback import SessionContext
 
 
-def test_session_context_defaults():
-    """Verifica que los valores por defecto se asignan correctamente."""
-    ctx = SessionContext()
+def test_session_context_default_values():
+    """Verifica que los valores por defecto se asignen correctamente."""
+    context = SessionContext()
 
-    assert ctx.cwd == Path.cwd()
-    assert ctx.env == {}
-    assert ctx.encoding == "utf-8"
+    assert isinstance(context.cwd, Path)
+    assert context.cwd == Path.cwd()
+    assert context.env == {}
+    assert context.encoding == "utf-8"
 
 
 def test_session_context_custom_values():
     """Verifica la asignación de valores personalizados."""
-    custom_cwd = Path("/tmp")
-    custom_env = {"KEY": "VALUE"}
+    custom_path = Path("/tmp")
+    custom_env = {"DEBUG": "1", "USER": "test_user"}
+    custom_encoding = "latin-1"
 
-    ctx = SessionContext(cwd=custom_cwd, env=custom_env, encoding="ascii")
+    context = SessionContext(cwd=custom_path, env=custom_env, encoding=custom_encoding)
 
-    assert ctx.cwd == custom_cwd
-    assert ctx.env == custom_env
-    assert ctx.encoding == "ascii"
+    assert context.cwd == custom_path
+    assert context.env["DEBUG"] == "1"
+    assert context.encoding == "latin-1"
 
 
 def test_session_context_immutability():
-    """Verifica que no se puedan modificar los atributos (frozen=True)."""
-    ctx = SessionContext()
+    """
+    Verifica que la clase sea inmutable (frozen=True).
+    Cualquier intento de modificar un atributo debe lanzar FrozenInstanceError.
+    """
+    context = SessionContext()
 
-    with pytest.raises(FrozenInstanceError):
-        ctx.encoding = "latin-1"
+    with pytest.raises(
+        AttributeError
+    ):  # En dataclasses frozen, lanza AttributeError al intentar setear
+        context.encoding = "ascii"
+
+    with pytest.raises(AttributeError):
+        context.cwd = Path("/bin")
+
+
+def test_session_context_env_is_isolated():
+    """Verifica que el diccionario de entorno no sea compartido entre instancias."""
+    ctx1 = SessionContext(env={"VAR": "1"})
+    ctx2 = SessionContext()
+
+    assert "VAR" not in ctx2.env
+    assert ctx1.env is not ctx2.env
+
+
+def test_session_context_repr():
+    """Verifica que la representación en cadena sea legible (útil para debugging)."""
+    context = SessionContext(encoding="utf-16")
+    repr_str = repr(context)
+
+    assert "SessionContext" in repr_str
+    assert "encoding='utf-16'" in repr_str

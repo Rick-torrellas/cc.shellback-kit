@@ -8,18 +8,77 @@ Built with Hexagonal Architecture (Ports and Adapters) principles, Shellback ens
 
 ```python
 
-from CapsuleCore_shellback import Bash, ConsoleLogger,Command
+from pathlib import Path
+from capsulecore_shellback.core import Command
+from capsulecore_shellback.shells import Bash
 
-logger = ConsoleLogger()
-mkdir = Command("mkdir").add_args("dir")
+# 1. Instanciar la Shell (Bash)
+with Bash() as shell:
+    # 2. Crear el comando
+    cmd = Command("ls").add_args("-la")
+    
+    # 3. Ejecutar
+    result = shell.run(cmd)
 
-with Bash(logger=logger) as sh:
-    result = sh.run(mkdir)
+    # 4. Leer resultados
     if result.is_success():
-        print("Directory created successfully.")
-    else:
-        print("Error creating directory.")
+        print(f"Salida:\n{result.standard_output}")
+        print(f"Tiempo de ejecución: {result.execution_time:.4f}s")
 ```        
+
+### Ejecutando un Comando
+
+```python
+from pathlib import Path
+from capsulecore_shellback.core import Command
+from capsulecore_shellback.shells import Bash
+
+# 1. Instanciar la Shell (Bash)
+with Bash() as shell:
+    # 2. Crear el comando
+    cmd = Command("ls").add_args("-la")
+    
+    # 3. Ejecutar
+    result = shell.run(cmd)
+
+    # 4. Leer resultados
+    if result.is_success():
+        print(f"Salida:\n{result.standard_output}")
+        print(f"Tiempo de ejecución: {result.execution_time:.4f}s")
+```
+
+### Gestión de Argumentos y Flags
+
+```python
+from capsulecore_shellback.core import Command
+
+# Construcción fluida de: git commit -m "feat: initial commit" --rebase
+git_cmd = (
+    Command("git")
+    .add_args("commit")
+    .add_args("-m", "feat: initial commit")
+)
+git_cmd.builder.add_flag("rebase")
+
+print(git_cmd.args) 
+# Resultado: ['commit', '-m', 'feat: initial commit', '--rebase']
+```
+
+### Manejo de Contexto y Directorios
+
+```python
+from capsulecore_shellback.shells import Bash
+
+with Bash() as shell:
+    # Cambiar de directorio virtualmente
+    shell.cd("src")
+    
+    # El comando se ejecutará dentro de /actual/path/src
+    result = shell.run(Command("pwd"))
+    print(f"Directorio actual: {result.standard_output.strip()}")
+```
+
+
 
 
 ## Key Features

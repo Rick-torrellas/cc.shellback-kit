@@ -1,5 +1,11 @@
 from .capsule import ArgumentBuilder, Command, Bash
-from .core import Shell, SessionContext, CommandResult, CommandNotFoundError
+from .core import (
+    Shell,
+    SessionContext,
+    CommandResult,
+    CommandNotFoundError,
+    ShellObserver,
+)
 
 
 __all__ = [
@@ -10,4 +16,5 @@ __all__ = [
     "SessionContext",
     "CommandResult",
     "CommandNotFoundError",
+    "ShellObserver",
 ]
