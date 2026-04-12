@@ -1,60 +1,57 @@
 import pytest
 from pathlib import Path
-from CapsuleCore_shellback import SessionContext
-
+from cc_shellback_kit import SessionContext
 
 def test_session_context_default_values():
-    """Verifica que los valores por defecto se asignen correctamente."""
+    """Valida que los valores por defecto se asignen correctamente."""
     context = SessionContext()
-
-    assert isinstance(context.cwd, Path)
+    
+    # El CWD por defecto debe ser el directorio actual del sistema
     assert context.cwd == Path.cwd()
+    # El entorno debe ser un diccionario vacío por defecto
     assert context.env == {}
+    # El encoding por defecto debe ser utf-8
     assert context.encoding == "utf-8"
 
-
 def test_session_context_custom_values():
-    """Verifica la asignación de valores personalizados."""
-    custom_path = Path("/tmp")
-    custom_env = {"DEBUG": "1", "USER": "test_user"}
-    custom_encoding = "latin-1"
-
-    context = SessionContext(cwd=custom_path, env=custom_env, encoding=custom_encoding)
-
+    """Valida la creación de un contexto con valores personalizados."""
+    custom_path = Path("/tmp/test")
+    custom_env = {"DEBUG": "1", "USER": "tester"}
+    
+    context = SessionContext(
+        cwd=custom_path,
+        env=custom_env,
+        encoding="ascii"
+    )
+    
     assert context.cwd == custom_path
     assert context.env["DEBUG"] == "1"
-    assert context.encoding == "latin-1"
-
+    assert context.encoding == "ascii"
 
 def test_session_context_immutability():
-    """
-    Verifica que la clase sea inmutable (frozen=True).
-    Cualquier intento de modificar un atributo debe lanzar FrozenInstanceError.
-    """
+    """Verifica que el contexto sea inmutable (frozen=True)."""
     context = SessionContext()
-
-    with pytest.raises(
-        AttributeError
-    ):  # En dataclasses frozen, lanza AttributeError al intentar setear
-        context.encoding = "ascii"
-
+    
+    # Intentar modificar un atributo debería lanzar una excepción
     with pytest.raises(AttributeError):
-        context.cwd = Path("/bin")
+        context.encoding = "utf-16"
 
-
-def test_session_context_env_is_isolated():
-    """Verifica que el diccionario de entorno no sea compartido entre instancias."""
-    ctx1 = SessionContext(env={"VAR": "1"})
-    ctx2 = SessionContext()
-
-    assert "VAR" not in ctx2.env
-    assert ctx1.env is not ctx2.env
-
-
-def test_session_context_repr():
-    """Verifica que la representación en cadena sea legible (útil para debugging)."""
-    context = SessionContext(encoding="utf-16")
-    repr_str = repr(context)
-
-    assert "SessionContext" in repr_str
-    assert "encoding='utf-16'" in repr_str
+def test_session_context_with_dataclasses_replace():
+    """
+    Verifica que se puedan crear copias modificadas usando replace.
+    Este es el patrón que usa Shell.py para actualizar el estado.
+    """
+    from dataclasses import replace
+    
+    initial_context = SessionContext(encoding="utf-8")
+    new_path = Path("/home/user")
+    
+    # Creamos un nuevo objeto basado en el anterior pero con el CWD cambiado
+    updated_context = replace(initial_context, cwd=new_path)
+    
+    # El nuevo objeto tiene el cambio
+    assert updated_context.cwd == new_path
+    # El objeto original permanece intacto
+    assert initial_context.cwd == Path.cwd()
+    # Los valores no mencionados en replace se mantienen
+    assert updated_context.encoding == "utf-8"

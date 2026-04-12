@@ -1,12 +1,16 @@
-from .CommandResult import CommandResult
-from .SessionContext import SessionContext
 from .Shell import Shell, CommandNotFoundError
+from .Command import Command
+from .CommandResult import CommandResult
+from .ArgumentBuilder import ArgumentBuilder
+from .SessionContext import SessionContext
 from .ShellObserver import ShellObserver
 
 __all__ = [
-    "CommandResult",
-    "SessionContext",
     "Shell",
-    "CommandNotFoundError",
+    "Command",
+    "CommandResult",
+    "ArgumentBuilder",
+    "SessionContext",
     "ShellObserver",
+    "CommandNotFoundError",
 ]

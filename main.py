@@ -1,4 +1,4 @@
-from src.CapsuleCore_shellback import Bash, ConsoleLogger, Command
+from src.cc_shellback_kit import Bash, ConsoleLogger, Command
 
 logger = ConsoleLogger()
 mkdir = Command("mkdir").add_args("olis")
