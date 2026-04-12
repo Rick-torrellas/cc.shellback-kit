@@ -1,33 +1,39 @@
+# conftest.py
 import pytest
-from unittest.mock import MagicMock, patch
-from CapsuleCore_shellback import ShellObserver, Bash
+from unittest.mock import MagicMock
+
+# Asegúrate de que las rutas de importación coincidan con tu nueva estructura
+from cc_shellback_kit.core import Shell, ShellObserver, SessionContext
+from cc_shellback_kit.capsule import Bash
+
+
+class ShellStub(Shell):
+    """Implementación mínima para testear la clase base Shell."""
+
+    def _format_command(self, executable: str, args: list[str]) -> list[str]:
+        # Simplemente devolvemos los argumentos para verificar la lógica de aplanamiento
+        return args
 
 
 @pytest.fixture
-def mock_subprocess():
-    with patch("subprocess.run") as mocked_run:
-        # Configuramos un retorno por defecto exitoso
-        mocked_run.return_value = MagicMock(
-            stdout="output de prueba", stderr="", returncode=0
-        )
-        yield mocked_run
+def mock_observer():
+    """Fixture que proporciona un observer mockeado para verificar llamadas."""
+    return MagicMock(spec=ShellObserver)
 
 
 @pytest.fixture
-def mock_binaries():
-    with patch("shutil.which") as mocked_which:
-        # Simulamos que cualquier comando que busquemos existe en /usr/bin/
-        mocked_which.side_effect = lambda x: f"/usr/bin/{x}"
-        yield mocked_which
+def session_context(tmp_path):
+    """Fixture para un contexto de sesión controlado con un CWD temporal."""
+    return SessionContext(cwd=tmp_path)
 
 
 @pytest.fixture
-def spy_observer():
-    # Creamos un mock que hereda de la interfaz para asegurar compatibilidad
-    observer = MagicMock(spec=ShellObserver)
-    return observer
+def shell_stub(mock_observer, session_context):
+    """Proporciona una instancia de ShellStub lista para testear."""
+    return ShellStub(context=session_context, observer=mock_observer)
 
 
 @pytest.fixture
-def shell(mock_subprocess, mock_binaries, spy_observer):
-    return Bash(observer=spy_observer)
+def bash_shell(mock_observer, session_context):
+    """Proporciona una instancia real de la implementación Bash."""
+    return Bash(context=session_context, observer=mock_observer)

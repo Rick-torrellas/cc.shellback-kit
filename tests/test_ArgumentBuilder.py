@@ -1,60 +1,70 @@
-from CapsuleCore_shellback import ArgumentBuilder
+from cc_shellback_kit import ArgumentBuilder
 
 
 class TestArgumentBuilder:
-    def test_default_initialization(self):
-        """Verifica que por defecto use estilo unix y empiece vacío."""
+    def test_add_single_argument(self):
+        """Verifica que se añadan argumentos simples correctamente."""
         builder = ArgumentBuilder()
-        assert builder.style == "unix"
-        assert builder.build() == []
+        builder.add_arg("ls")
+        builder.add_arg("-la")
+        assert builder.build() == ["ls", "-la"]
 
-    def test_add_flag_unix_style(self):
-        """Verifica el formato de flags en estilo Unix (--flag)."""
-        builder = ArgumentBuilder(style="unix")
-        builder.add_flag("verbose")
-        assert builder.build() == ["--verbose"]
-
-    def test_add_flag_ms_style(self):
-        """Verifica el formato de flags en estilo MS (/flag)."""
-        builder = ArgumentBuilder(style="ms")
-        builder.add_flag("help")
-        assert builder.build() == ["/help"]
-
-    def test_add_flag_with_value(self):
-        """Verifica que los valores se añadan como elementos separados en la lista."""
-        builder = ArgumentBuilder(style="unix")
-        builder.add_flag("output", "file.txt")
-        # El resultado esperado es que el valor siga al flag
-        assert builder.build() == ["--output", "file.txt"]
-
-    def test_method_chaining(self):
-        """Verifica que se puedan encadenar llamadas a add_flag."""
+    def test_flatten_list_arguments(self):
+        """Verifica que las listas y tuplas se aplanen automáticamente."""
         builder = ArgumentBuilder()
-        result = builder.add_flag("quiet").add_flag("log", "debug.log").build()
-        assert result == ["--quiet", "--log", "debug.log"]
+        builder.add_arg(["git", "commit"])
+        builder.add_arg("-m")
+        builder.add_arg(["Mensaje con espacios"])
 
-    def test_mixed_flags_and_values(self):
-        """Prueba una combinación compleja de flags con y sin valores."""
-        builder = ArgumentBuilder(style="ms")
+        assert builder.build() == ["git", "commit", "-m", "Mensaje con espacios"]
+
+    def test_ignore_none_and_empty_values(self):
+        """Verifica que los valores None o strings vacíos no se añadan."""
+        builder = ArgumentBuilder()
+        builder.add_arg(None)
+        builder.add_arg("")
+        builder.add_arg("  ")  # Espacios en blanco
+        builder.add_arg("python")
+
+        assert builder.build() == ["python"]
+
+    def test_fluent_interface(self):
+        """Verifica que los métodos sean encadenables (return self)."""
+        builder = ArgumentBuilder()
+        result = builder.add_arg("cmd").add_flag("v").add_arg("file.txt")
+
+        assert isinstance(result, ArgumentBuilder)
+        assert builder.build() == ["cmd", "--v", "file.txt"]
+
+    def test_unix_style_flags(self):
+        """Verifica el prefijo '--' para el estilo unix por defecto."""
+        builder = ArgumentBuilder(style="unix")
         builder.add_flag("force")
-        builder.add_flag("user", "admin")
-        builder.add_flag("retry", 3)
+        builder.add_flag("output", "results.txt")
 
-        expected = ["/force", "/user", "admin", "/retry", "3"]
+        expected = ["--force", "--output", "results.txt"]
         assert builder.build() == expected
 
-    def test_value_conversion_to_string(self):
-        """Verifica que valores no-string (int, float) se conviertan a string."""
+    def test_windows_style_flags(self):
+        """Verifica el prefijo '/' para el estilo windows."""
+        builder = ArgumentBuilder(style="windows")
+        builder.add_flag("all")
+        builder.add_flag("limit", 10)
+
+        expected = ["/all", "/limit", "10"]
+        assert builder.build() == expected
+
+    def test_flag_name_cleaning(self):
+        """Verifica que los espacios en los nombres de flags se conviertan en underscores."""
         builder = ArgumentBuilder()
-        builder.add_flag("timeout", 500)
-        builder.add_flag("ratio", 0.5)
+        builder.add_flag("ignore case")
 
-        assert builder.build() == ["--timeout", "500", "--ratio", "0.5"]
+        assert builder.build() == ["--ignore_case"]
 
-    def test_internal_args_access(self):
-        """Verifica que la manipulación directa de _args (usada en Command.py) funcione."""
+    def test_complex_nesting(self):
+        """Verifica un caso complejo con anidación profunda de listas."""
         builder = ArgumentBuilder()
-        builder._args.append("positional_arg")
-        builder.add_flag("flag")
+        builder.add_arg(["docker", ["run", ["-d", "--name"]], "my_container"])
 
-        assert builder.build() == ["positional_arg", "--flag"]
+        expected = ["docker", "run", "-d", "--name", "my_container"]
+        assert builder.build() == expected

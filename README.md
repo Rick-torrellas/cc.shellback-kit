@@ -1,97 +1,62 @@
-# CapsuleCore shellback
+# cc-shellback-kit
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+![Version](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Rick-torrellas/cc-shellback-kit/badges/version.json)
+[![CI CD](https://github.com/Rick-torrellas/cc-shellback-kit/actions/workflows/main.yaml/badge.svg)](https://github.com/Rick-torrellas/cc-shellback-kit/actions/workflows/main.yaml)
+[![Python Version](https://img.shields.io/badge/python-3.11+-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![Download](https://img.shields.io/github/v/release/Rick-torrellas/cc-shellback-kit?label=Download&color=orange)](https://github.com/Rick-torrellas/cc-shellback-kit/releases)
+[![Ask DeepWiki](https://img.shields.io/badge/DeepWiki-Documentation-blue?logo=gitbook&logoColor=white)](https://deepwiki.com/Rick-torrellas/cc-shellback-kit)
+[![docs](https://img.shields.io/badge/docs-read_now-blue?style=flat-square)](https://rick-torrellas.github.io/cc-shellback-kit/)
 
 Shellback is a robust, architecturally-agnostic Python library designed to bridge terminal environments (Bash, CMD, PowerShell) with Python scripts. It provides a clean, decoupled abstraction layer to execute system commands while maintaining persistent session state and cross-platform compatibility.
 
 Built with Hexagonal Architecture (Ports and Adapters) principles, Shellback ensures that your domain logic remains independent of the specific shell or operating system being used.
 
+---
+
+## 📍 Contenido
+* [Installation](#installation)
+* [Usage](#usage)
+
+---
+
+## Installation
+
+You can install cc-shellback-kit using pip:
+
+```bash
+pip install cc.shellback-kit
+```
+
 ## Usage
 
 ```python
+from cc_shellback_kit import Bash, ConsoleLogObserver, Command, SessionContext
 
-from pathlib import Path
-from capsulecore_shellback.core import Command
-from capsulecore_shellback.shells import Bash
+# 1. Configuramos el observador para ver la actividad en consola
+observer = ConsoleLogObserver()
 
-# 1. Instanciar la Shell (Bash)
-with Bash() as shell:
-    # 2. Crear el comando
-    cmd = Command("ls").add_args("-la")
+# 2. Iniciamos la Shell usando el manejador de contexto (with)
+with Bash(observer=observer) as shell:
     
-    # 3. Ejecutar
-    result = shell.run(cmd)
-
-    # 4. Leer resultados
+    # --- EJECUCIÓN DE COMANDOS EXTERNOS ---
+    # Creamos un comando simple: 'ls -la'
+    cmd_list = Command("ls").add_args("-la")
+    result = shell.run(cmd_list)
+    
     if result.is_success():
-        print(f"Salida:\n{result.standard_output}")
-        print(f"Tiempo de ejecución: {result.execution_time:.4f}s")
-```        
+        print(f"Archivos encontrados:\n{result.standard_output}")
 
-### Ejecutando un Comando
-
-```python
-from pathlib import Path
-from capsulecore_shellback.core import Command
-from capsulecore_shellback.shells import Bash
-
-# 1. Instanciar la Shell (Bash)
-with Bash() as shell:
-    # 2. Crear el comando
-    cmd = Command("ls").add_args("-la")
+    # --- MANEJO DE ESTADO (VIRTUAL BUILT-INS) ---
+    # Cambiamos de directorio (esto afecta al SessionContext, no solo al proceso)
+    shell.run(Command("cd").add_args("/tmp"))
     
-    # 3. Ejecutar
-    result = shell.run(cmd)
+    # Verificamos el cambio ejecutando un 'pwd'
+    shell.run(Command("pwd"))
 
-    # 4. Leer resultados
-    if result.is_success():
-        print(f"Salida:\n{result.standard_output}")
-        print(f"Tiempo de ejecución: {result.execution_time:.4f}s")
+    # --- VARIABLES DE ENTORNO ---
+    # Exportamos una variable que persistirá durante este bloque 'with'
+    shell.run(Command("export").add_args("APP_STAGE=development", "DEBUG=true"))
 ```
 
-### Gestión de Argumentos y Flags
-
-```python
-from capsulecore_shellback.core import Command
-
-# Construcción fluida de: git commit -m "feat: initial commit" --rebase
-git_cmd = (
-    Command("git")
-    .add_args("commit")
-    .add_args("-m", "feat: initial commit")
-)
-git_cmd.builder.add_flag("rebase")
-
-print(git_cmd.args) 
-# Resultado: ['commit', '-m', 'feat: initial commit', '--rebase']
-```
-
-### Manejo de Contexto y Directorios
-
-```python
-from capsulecore_shellback.shells import Bash
-
-with Bash() as shell:
-    # Cambiar de directorio virtualmente
-    shell.cd("src")
-    
-    # El comando se ejecutará dentro de /actual/path/src
-    result = shell.run(Command("pwd"))
-    print(f"Directorio actual: {result.standard_output.strip()}")
-```
-
-
-
-
-## Key Features
-
-Agnostic Design: Decouple your application logic from the underlying shell implementation.
-
-Persistent Session State: Maintain working directories (cwd), environment variables, and encodings across multiple executions using SessionContext.
-
-Fluent Command Builder: Construct complex commands with a declarative and chainable API via ArgumentBuilder and Command.
-
-Safe Execution: Automatic validation of executables in the system PATH before execution.
-
-Flexible Logging: Swappable logging backends (Console, Null, or custom) using the Strategy and Null Object patterns.
-
-Pipe-like Syntax: Easy integration between command results using the | operator.
 
