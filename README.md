@@ -7,9 +7,7 @@ Built with Hexagonal Architecture (Ports and Adapters) principles, Shellback ens
 ## Usage
 
 ```python
-from cc_shellback_kit.capsule import Bash
-from cc_shellback_kit.core import Command, SessionContext
-from cc_shellback_kit.observers import ConsoleLogObserver
+from cc_shellback_kit import Bash, ConsoleLogObserver, Command, SessionContext
 
 # 1. Configuramos el observador para ver la actividad en consola
 observer = ConsoleLogObserver()
