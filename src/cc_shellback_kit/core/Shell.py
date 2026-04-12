@@ -15,6 +15,7 @@ from .ArgumentBuilder import ArgumentBuilder
 
 class CommandNotFoundError(Exception):
     """Lanzada cuando el binario no existe en el PATH."""
+
     pass
 
 
@@ -70,7 +71,9 @@ class Shell(ABC):
             self.context = replace(self.context, cwd=new_path)
             self.observer.on_context_change("cwd", new_path)
 
-            return CommandResult(standard_output=f"Cambiado a: {new_path}", return_code=0)
+            return CommandResult(
+                standard_output=f"Cambiado a: {new_path}", return_code=0
+            )
         except Exception as e:
             return self._notify_error("Error crítico en cd", e)
 
@@ -87,8 +90,7 @@ class Shell(ABC):
 
             self.context = replace(self.context, env=new_env)
             return CommandResult(
-                standard_output=f"Variables actualizadas: {len(updates)}", 
-                return_code=0
+                standard_output=f"Variables actualizadas: {len(updates)}", return_code=0
             )
         except Exception as e:
             return self._notify_error("Fallo al exportar variables", e)
@@ -100,7 +102,7 @@ class Shell(ABC):
         try:
             # 1. Preparación y validación del ejecutable
             full_path = self._validate_executable(command.executable)
-            
+
             # 2. HELPER: Garantizamos consistencia de argumentos finales
             # Usamos el ArgumentBuilder para aplanar cualquier lista residual
             builder = ArgumentBuilder()
@@ -112,7 +114,7 @@ class Shell(ABC):
             self.observer.on_command_start(command.executable, final_args)
 
             start_time = time.perf_counter()
-            
+
             process = subprocess.run(
                 final_args,
                 cwd=self.context.cwd,
@@ -130,7 +132,7 @@ class Shell(ABC):
                 execution_time=time.perf_counter() - start_time,
                 command_sent=final_args,
             )
-            
+
             self.observer.on_command_result(result)
             return result
 
@@ -159,7 +161,7 @@ class Shell(ABC):
         if not target.is_absolute():
             return (self.context.cwd / target).resolve()
         return target.resolve()
-    
+
     def _parse_env_vars(self, args: list[str]) -> Dict[str, str]:
         updates = {}
         for arg in args:
@@ -168,7 +170,9 @@ class Shell(ABC):
                 updates[key] = value
         return updates
 
-    def _notify_error(self, message: str, error: Exception = None, return_code: int = 1) -> CommandResult:
+    def _notify_error(
+        self, message: str, error: Exception = None, return_code: int = 1
+    ) -> CommandResult:
         """Estandariza la notificación de errores y la respuesta."""
         self.observer.on_error(message, error)
         return CommandResult(standard_error=message, return_code=return_code)

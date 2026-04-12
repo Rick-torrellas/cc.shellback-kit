@@ -1,7 +1,7 @@
 from cc_shellback_kit import Command
 
+
 class TestCommand:
-    
     def test_command_initialization(self):
         """Verifica que el comando se inicializa con el ejecutable correcto."""
         cmd = Command("ls")
@@ -23,7 +23,7 @@ class TestCommand:
 
     def test_add_list_of_arguments(self):
         """
-        Verifica que el builder aplane correctamente las listas 
+        Verifica que el builder aplane correctamente las listas
         pasadas como argumentos (gracias a ArgumentBuilder).
         """
         cmd = Command("tar")
@@ -35,7 +35,7 @@ class TestCommand:
         """Verifica que add_args devuelva la instancia (patrón Fluent Interface)."""
         cmd = Command("docker")
         returned_cmd = cmd.add_args("ps").add_args("-a")
-        
+
         assert cmd is returned_cmd
         assert cmd.args == ["ps", "-a"]
 
@@ -44,13 +44,13 @@ class TestCommand:
         cmd = Command("echo")
         # El ArgumentBuilder convierte internamente a string y aplana
         cmd.add_args("User ID:", 1001, ["--force", "yes"])
-        
+
         assert cmd.args == ["User ID:", "1001", "--force", "yes"]
 
     def test_empty_and_none_arguments(self):
         """Verifica que se ignoren valores None o vacíos si el builder así lo gestiona."""
         cmd = Command("ls")
         cmd.add_args(None, "", "  ", "-l")
-        
+
         # Según ArgumentBuilder.py, ignora None y strings que queden vacíos tras .strip()
         assert cmd.args == ["-l"]

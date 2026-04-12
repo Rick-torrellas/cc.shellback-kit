@@ -7,22 +7,24 @@ class FileLogObserver(ShellObserver):
     """Guarda toda la actividad de la Shell en un archivo físico."""
 
     def __init__(self, log_path: str = "shell_activity.log"):
-            self.log_path = Path(log_path)
+        self.log_path = Path(log_path)
 
-            self.logger = logging.getLogger("ShellFileLogger")
-            self.logger.setLevel(logging.INFO)
-            self.logger.propagate = False  # Evita que los logs salgan por consola en los tests
+        self.logger = logging.getLogger("ShellFileLogger")
+        self.logger.setLevel(logging.INFO)
+        self.logger.propagate = (
+            False  # Evita que los logs salgan por consola en los tests
+        )
 
-            if self.logger.handlers:
-                for h in self.logger.handlers[:]:
-                    h.close()
-                    self.logger.removeHandler(h)
+        if self.logger.handlers:
+            for h in self.logger.handlers[:]:
+                h.close()
+                self.logger.removeHandler(h)
 
-            # Ahora creamos el nuevo handler con la ruta correcta
-            handler = logging.FileHandler(self.log_path, encoding="utf-8")
-            formatter = logging.Formatter("%(asctime)s | %(levelname)s | %(message)s")
-            handler.setFormatter(formatter) 
-            self.logger.addHandler(handler)
+        # Ahora creamos el nuevo handler con la ruta correcta
+        handler = logging.FileHandler(self.log_path, encoding="utf-8")
+        formatter = logging.Formatter("%(asctime)s | %(levelname)s | %(message)s")
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
 
     def on_session_start(self, shell_name: str):
         self.logger.info(f"=== INICIO DE SESIÓN: {shell_name} ===")

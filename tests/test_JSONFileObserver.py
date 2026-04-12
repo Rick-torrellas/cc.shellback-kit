@@ -4,15 +4,18 @@ from pathlib import Path
 from cc_shellback_kit import Command, CommandResult
 from cc_shellback_kit import JSONFileObserver
 
+
 @pytest.fixture
 def json_log_path(tmp_path):
     """Proporciona una ruta temporal para el archivo JSON."""
     return tmp_path / "test_audit.json"
 
+
 @pytest.fixture
 def observer(json_log_path):
     """Instancia del observador apuntando al archivo temporal."""
     return JSONFileObserver(log_path=str(json_log_path))
+
 
 def test_json_observer_records_command_result(observer, json_log_path):
     # 1. Preparar un resultado de comando ficticio
@@ -21,7 +24,7 @@ def test_json_observer_records_command_result(observer, json_log_path):
         standard_error="",
         return_code=0,
         execution_time=0.1234,
-        command_sent=["echo", "Hello World"]
+        command_sent=["echo", "Hello World"],
     )
 
     # 2. Simular el evento
@@ -38,6 +41,7 @@ def test_json_observer_records_command_result(observer, json_log_path):
     assert entry["command"] == ["echo", "Hello World"]
     assert entry["duration"] == 0.1234
 
+
 def test_json_observer_records_context_change(observer, json_log_path):
     # Simular cambio de directorio
     new_cwd = Path("/tmp/test")
@@ -50,11 +54,12 @@ def test_json_observer_records_context_change(observer, json_log_path):
     assert logs[0]["event"] == "context_mutation"
     assert logs[0]["change"] == {"cwd": str(new_cwd)}
 
+
 def test_json_observer_records_error(observer, json_log_path):
     # Simular un error del sistema
     error_msg = "Comando no encontrado"
     exception = Exception("File not found")
-    
+
     observer.on_error(error_msg, exception)
 
     with open(json_log_path, "r", encoding="utf-8") as f:
@@ -64,9 +69,10 @@ def test_json_observer_records_error(observer, json_log_path):
     assert logs[0]["message"] == error_msg
     assert "File not found" in logs[0]["exception"]
 
+
 def test_integration_with_shell(bash_shell, json_log_path):
     """
-    Test de integración: Verifica que al usar la Shell real, 
+    Test de integración: Verifica que al usar la Shell real,
     el JSONFileObserver capture los eventos automáticamente.
     """
     # Inyectamos el JSON observer en la shell de la fixture
@@ -76,7 +82,7 @@ def test_integration_with_shell(bash_shell, json_log_path):
     # Ejecutamos comandos de estado y de efecto
     cmd_cd = Command("cd").add_args("/")
     bash_shell.run(cmd_cd)
-    
+
     cmd_echo = Command("echo").add_args("test")
     bash_shell.run(cmd_echo)
 

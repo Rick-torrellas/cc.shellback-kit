@@ -1,5 +1,6 @@
 from typing import Any, List
 
+
 class ArgumentBuilder:
     """Garantiza la consistencia de los argumentos para el Sistema Operativo."""
 

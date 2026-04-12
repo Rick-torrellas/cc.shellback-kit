@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, List, Optional, Dict
 from ..core import ShellObserver, CommandResult
 
+
 class JSONFileObserver(ShellObserver):
     """
     Registra toda la actividad de la Shell en un archivo JSON.
@@ -20,7 +21,7 @@ class JSONFileObserver(ShellObserver):
         try:
             with open(self.log_path, "r", encoding="utf-8") as f:
                 return json.load(f)
-        except (json.JSONDecodeError, FileNotFoundError):
+        except json.JSONDecodeError, FileNotFoundError:
             return []
 
     def _write_logs(self, logs: List[Dict[str, Any]]):
@@ -41,7 +42,7 @@ class JSONFileObserver(ShellObserver):
             "exit_code": result.return_code,
             "duration": round(result.execution_time, 4),
             "stdout_len": len(result.standard_output),
-            "stderr": result.standard_error.strip() if result.standard_error else None
+            "stderr": result.standard_error.strip() if result.standard_error else None,
         }
         self._append_entry(entry)
 
@@ -49,7 +50,7 @@ class JSONFileObserver(ShellObserver):
         entry = {
             "timestamp": time.time(),
             "event": "context_mutation",
-            "change": {key: str(value)}
+            "change": {key: str(value)},
         }
         self._append_entry(entry)
 
@@ -58,6 +59,6 @@ class JSONFileObserver(ShellObserver):
             "timestamp": time.time(),
             "event": "internal_error",
             "message": message,
-            "exception": str(error) if error else None
+            "exception": str(error) if error else None,
         }
         self._append_entry(entry)

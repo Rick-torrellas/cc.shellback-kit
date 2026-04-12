@@ -1,5 +1,6 @@
 from .ArgumentBuilder import ArgumentBuilder
 
+
 class Command:
     """Representa un comando ejecutable con sus argumentos."""
 
@@ -9,7 +10,7 @@ class Command:
 
     def add_args(self, *args) -> "Command":
         """
-        Añade argumentos posicionales. 
+        Añade argumentos posicionales.
         Soporta elementos sueltos o listas gracias al nuevo builder.
         """
         for arg in args:

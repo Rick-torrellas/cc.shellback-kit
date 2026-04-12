@@ -3,9 +3,10 @@ import pytest
 from cc_shellback_kit import Command
 from cc_shellback_kit import SilentObserver
 
+
 def test_silent_observer_execution_flow(bash_shell, tmp_path):
     """
-    Verifica que el SilentObserver no interfiera en la ejecución 
+    Verifica que el SilentObserver no interfiera en la ejecución
     y soporte todos los hooks sin errores.
     """
     # 1. Instanciar el observador silencioso y asignarlo a la shell
@@ -20,7 +21,7 @@ def test_silent_observer_execution_flow(bash_shell, tmp_path):
             # Esto dispara on_command_start y on_command_result
             cmd_echo = Command("echo").add_args("hola")
             result = sh.run(cmd_echo)
-            
+
             assert result.is_success()
             assert "hola" in result.standard_output
 
@@ -28,26 +29,27 @@ def test_silent_observer_execution_flow(bash_shell, tmp_path):
             # Esto dispara on_context_change (cwd)
             cmd_cd = Command("cd").add_args(str(tmp_path))
             sh.run(cmd_cd)
-            
+
             assert sh.context.cwd == tmp_path
 
             # 5. Testear manejo de errores
             # Esto dispara on_error
             cmd_error = Command("comando_inexistente_xyz")
             res_err = sh.run(cmd_error)
-            
+
             assert res_err.return_code == 127
-            
+
     except Exception as e:
         pytest.fail(f"SilentObserver lanzó una excepción inesperada: {e}")
 
+
 def test_silent_observer_direct_calls():
     """
-    Test unitario puro: invocar los métodos directamente para asegurar 
+    Test unitario puro: invocar los métodos directamente para asegurar
     que las firmas coinciden con la interfaz base y no hacen nada.
     """
     observer = SilentObserver()
-    
+
     # Si alguno de estos fallara, significaría que la firma en SilentObserver
     # o su clase base ShellObserver ha cambiado incorrectamente.
     assert observer.on_session_start("Bash") is None
