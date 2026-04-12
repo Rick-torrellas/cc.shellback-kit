@@ -1,4 +1,4 @@
-# CapsuleCore shellback
+# cc-shellback-kit
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Version](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Rick-torrellas/cc-shellback-kit/badges/version.json)
@@ -13,7 +13,13 @@ Built with Hexagonal Architecture (Ports and Adapters) principles, Shellback ens
 
 ---
 
+## Installation
 
+You can install cc-shellback-kit using pip:
+
+```bash
+pip install cc.shellback-kit
+```
 
 ## Usage
 
