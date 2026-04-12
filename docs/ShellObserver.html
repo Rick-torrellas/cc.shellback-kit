@@ -1,0 +1,182 @@
+usando los siguientes estilos css y crea una documentacion en html y en ingles para el siguiente codigo de python:
+
+el resultado debe ser un archivo html puro<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documento HTML Puro</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>Archivo HTML Puro</h1>
+        <p>Estructura semántica y diseño moderno en un solo archivo</p>
+    </header>
+
+    <main>
+        <h2>Información del Documento</h2>
+        <p>Este es un ejemplo de un archivo HTML autónomo. No requiere archivos CSS externos ni librerías de terceros para visualizarse correctamente.</p>
+
+        <div class="card
+
+from abc import ABC
+from typing import Any
+
+from .CommandResult import CommandResult
+
+
+class ShellObserver(ABC):  # Puede heredar de ABC si quieres marcarla como base
+    """
+    Interfaz base para la observación de eventos del ciclo de vida de la Shell.
+
+    Esta clase actúa como una 'caja de herramientas' de hooks. Los métodos
+    tienen una implementación vacía por defecto para permitir que las
+    clases hijas solo sobrescriban los eventos que les interesa capturar.
+    """
+
+    def on_session_start(self, shell_name: str):
+        """
+        Se dispara al entrar en el contexto de la Shell (bloque 'with').
+        Útil para inicializar recursos de logging o telemetría.
+        """
+        pass
+
+    def on_session_end(self, shell_name: str, error: Exception = None):
+        """
+        Se dispara al salir del contexto de la Shell.
+        Permite registrar si la sesión terminó de forma limpia o por una excepción.
+        """
+        pass
+
+    def on_context_change(self, key: str, value: Any):
+        """
+        Se dispara cuando un comando de estado (Virtual Builtin) muta el contexto.
+        Ejemplo: cambios en el CWD (Directorio de trabajo) o variables de entorno.
+        """
+        pass
+
+    def on_command_start(self, executable: str, final_args: list[str]):
+        """
+        Se dispara justo antes de enviar un comando de efecto al sistema operativo.
+        Proporciona los argumentos finales tal cual serán ejecutados por el adaptador.
+        """
+        pass
+
+    def on_command_result(self, result: "CommandResult"):
+        """
+        Se dispara tras recibir la respuesta de un comando de efecto.
+        Permite reaccionar al código de retorno, stdout y stderr.
+        """
+        pass
+
+    def on_error(self, message: str, error: Exception = None):
+        """
+        Se dispara cuando ocurre un error controlado o inesperado dentro del Core.
+        Funciona como un sumidero de errores para evitar que la lógica de negocio se ensucie.
+        """
+        pass
+
+
+body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        h2 {
+            color: #34495e;
+            border-bottom: 2px solid #bdc3c7;
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        
+        h3 {
+            color: #2980b9;
+            margin-top: 20px;
+        }
+        
+        .class-name {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-left: 4px solid #3498db;
+            font-family: 'Courier New', monospace;
+            font-size: 1.2em;
+            margin: 20px 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        
+        th {
+            background-color: #3498db;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        code {
+            background-color: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+            color: #c7254e;
+        }
+        
+        pre {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            line-height: 1.4;
+        }
+        
+        .note {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .pattern-box {
+            background-color: #e8f4f8;
+            border: 1px solid #3498db;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .method-signature {
+            background-color: #f0f7ff;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+        }
