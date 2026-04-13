@@ -20,6 +20,7 @@ Built with Hexagonal Architecture (Ports and Adapters) principles, Shellback ens
 * [Usage](#usage)
 * [Architecture Components](#architecture-components)
 * [License](#license)
+* [Key Features](#key-features)
 
 ---
 
@@ -90,6 +91,15 @@ if not result.is_success():
 ```
 
 ---
+
+## ✨ Key Features
+
+* **Hexagonal Architecture**: Decouples core logic from shell-specific implementations, allowing for easy extension to new shells or platforms.
+* Persistent Session State: Keeps track of your Current Working Directory (cwd) and environment variables across multiple command executions.
+* Plug-and-Play Observers: Built-in support for console logging, file logging, JSON auditing, or multi-channel notifications.
+* Fluent API: Easily build complex commands with the ArgumentBuilder using a method-chaining interface.
+* Safe Argument Handling: Automatic cleaning, flattening, and formatting of arguments to prevent common shell injection issues.
+* Cross-Platform Compatibility: Works seamlessly on Windows, macOS, and Linux with support for Bash, CMD, and PowerShell.
 
 ## 🧪 Architecture Components
 
