@@ -5,41 +5,47 @@ from cc_shellback_kit import CommandNotFoundError
 
 def test_validate_executable_success(shell_stub):
     """
-    Verifica que si shutil.which encuentra el comando,
-    devuelve la ruta completa.
+    Verifies that if shutil.which finds the command,
+    it returns the full path.
     """
+    # Patch shutil.which to control its behavior during the test
     with patch("shutil.which") as mock_which:
-        # Simulamos que encuentra el binario en una ruta típica
+        # Simulate finding the binary at a typical path
         mock_which.return_value = "/usr/bin/ls"
 
         result = shell_stub._validate_executable("ls")
 
+        # Ensure the returned path matches the mock value
         assert result == "/usr/bin/ls"
+        # Verify the mock was called with the correct argument
         mock_which.assert_called_once_with("ls")
 
 
 def test_validate_executable_not_found(shell_stub):
     """
-    Verifica que se lanza CommandNotFoundError si el binario no existe.
+    Verifies that CommandNotFoundError is raised if the binary does not exist.
     """
     with patch("shutil.which") as mock_which:
-        # Simulamos que no encuentra nada
+        # Simulate that the command is not found in the system PATH
         mock_which.return_value = None
 
+        # Check that the specific exception is raised
         with pytest.raises(CommandNotFoundError) as excinfo:
             shell_stub._validate_executable("comando_fantasma")
 
-        assert "Comando no encontrado: comando_fantasma" in str(excinfo.value)
+        # Validate the error message content
+        assert "Command not found: comando_fantasma" in str(excinfo.value)
         mock_which.assert_called_once_with("comando_fantasma")
 
 
 def test_validate_executable_with_absolute_path(shell_stub):
     """
-    Verifica que funciona correctamente incluso si el usuario
-    pasa una ruta absoluta que existe.
+    Verifies that it works correctly even if the user
+    passes an absolute path that exists.
     """
     absolute_path = "/usr/local/bin/python3"
     with patch("shutil.which") as mock_which:
+        # Mock returns the same absolute path passed as input
         mock_which.return_value = absolute_path
 
         result = shell_stub._validate_executable(absolute_path)

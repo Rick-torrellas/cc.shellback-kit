@@ -3,62 +3,72 @@ from cc_shellback_kit.core import Command
 
 
 def test_handle_cd_success(shell_stub, tmp_path):
-    """Verifica que el cambio de directorio actualice el contexto y notifique al observer."""
-    # 1. Preparar un subdirectorio real
+    """Verifies that changing the directory updates the context and notifies the observer."""
+    # 1. Prepare a real subdirectory using tmp_path
     subdir = tmp_path / "test_dir"
     subdir.mkdir()
 
+    # Create the 'cd' command with the new directory as an argument
     cmd = Command("cd").add_args(str(subdir))
 
-    # 2. Ejecutar
+    # 2. Execute the command
     result = shell_stub.run(cmd)
 
-    # 3. Aserciones
+    # 3. Assertions
+    # Verify the command execution was successful
     assert result.is_success()
+    # Verify the shell's Current Working Directory (CWD) was updated
     assert shell_stub.context.cwd == subdir.resolve()
-    # Verificar que se notificó al observer del cambio de contexto
+    # Verify the observer was notified about the context change
     shell_stub.observer.on_context_change.assert_called_with("cwd", subdir.resolve())
 
 
 def test_handle_cd_non_existent_directory(shell_stub):
-    """Verifica que intentar cambiar a un directorio que no existe devuelva un error."""
+    """Verifies that attempting to change to a non-existent directory returns an error."""
+    # Store the initial CWD to verify it doesn't change later
     initial_cwd = shell_stub.context.cwd
-    fake_path = "/path/que/no/existe/en/el/universo"
+    fake_path = "/path/that/does/not/exist/in/the/universe"
 
+    # Create and run the command with a non-existent path
     cmd = Command("cd").add_args(fake_path)
     result = shell_stub.run(cmd)
 
-    # 3. Aserciones
+    # 3. Assertions
+    # The command should fail
     assert not result.is_success()
     assert result.return_code == 1
-    assert "no encontrado" in result.standard_error
-    assert shell_stub.context.cwd == initial_cwd  # El CWD no debe haber cambiado
-    # Verificar que se notificó el error
+    # Check for the specific error message in stderr
+    assert "Directory not found" in result.standard_error
+    # Ensure the CWD remained unchanged
+    assert shell_stub.context.cwd == initial_cwd
+    # Verify the observer was notified of the error
     shell_stub.observer.on_error.assert_called()
 
 
 def test_handle_cd_home_by_default(shell_stub):
-    """Verifica que 'cd' sin argumentos apunte al HOME del usuario."""
-    cmd = Command("cd")  # Sin argumentos
+    """Verifies that 'cd' without arguments points to the user's HOME."""
+    # Create the command without any arguments
+    cmd = Command("cd")
 
     result = shell_stub.run(cmd)
 
+    # Verify success and that the path resolved to the user's home directory
     assert result.is_success()
     assert shell_stub.context.cwd == Path.home().resolve()
 
 
 def test_handle_cd_relative_path(shell_stub, tmp_path):
-    """Verifica que las rutas relativas se resuelvan correctamente respecto al CWD actual."""
-    # Estructura: tmp_path/folder_a/folder_b
+    """Verifies that relative paths are resolved correctly with respect to the current CWD."""
+    # Setup structure: tmp_path/folder_a/folder_b
     dir_a = tmp_path / "folder_a"
     dir_b = dir_a / "folder_b"
     dir_b.mkdir(parents=True)
 
-    # Primero entramos a folder_a
+    # Step 1: Navigate into folder_a using an absolute path
     shell_stub.run(Command("cd").add_args(str(dir_a)))
 
-    # Ahora entramos a folder_b usando ruta relativa
+    # Step 2: Navigate into folder_b using a relative path
     result = shell_stub.run(Command("cd").add_args("folder_b"))
 
-    assert result.is_success()
-    assert shell_stub.context.cwd == dir_b.resolve()
+    # Assert that the relative path was resolved correctly based on the previous directory
+    assert result

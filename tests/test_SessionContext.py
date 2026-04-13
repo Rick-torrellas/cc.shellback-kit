@@ -4,19 +4,19 @@ from cc_shellback_kit import SessionContext
 
 
 def test_session_context_default_values():
-    """Valida que los valores por defecto se asignen correctamente."""
+    """Validate that default values are correctly assigned."""
     context = SessionContext()
 
-    # El CWD por defecto debe ser el directorio actual del sistema
+    # The default CWD should be the system's current working directory
     assert context.cwd == Path.cwd()
-    # El entorno debe ser un diccionario vacío por defecto
+    # The environment should be an empty dictionary by default
     assert context.env == {}
-    # El encoding por defecto debe ser utf-8
+    # The default encoding should be utf-8
     assert context.encoding == "utf-8"
 
 
 def test_session_context_custom_values():
-    """Valida la creación de un contexto con valores personalizados."""
+    """Validate the creation of a context with custom values."""
     custom_path = Path("/tmp/test")
     custom_env = {"DEBUG": "1", "USER": "tester"}
 
@@ -28,30 +28,30 @@ def test_session_context_custom_values():
 
 
 def test_session_context_immutability():
-    """Verifica que el contexto sea inmutable (frozen=True)."""
+    """Verify that the context is immutable (frozen=True)."""
     context = SessionContext()
 
-    # Intentar modificar un atributo debería lanzar una excepción
+    # Attempting to modify an attribute should raise an AttributeError
     with pytest.raises(AttributeError):
         context.encoding = "utf-16"
 
 
 def test_session_context_with_dataclasses_replace():
     """
-    Verifica que se puedan crear copias modificadas usando replace.
-    Este es el patrón que usa Shell.py para actualizar el estado.
+    Verify that modified copies can be created using the 'replace' function.
+    This is the pattern used by Shell.py to update the state.
     """
     from dataclasses import replace
 
     initial_context = SessionContext(encoding="utf-8")
     new_path = Path("/home/user")
 
-    # Creamos un nuevo objeto basado en el anterior pero con el CWD cambiado
+    # Create a new object based on the previous one but with a changed CWD
     updated_context = replace(initial_context, cwd=new_path)
 
-    # El nuevo objeto tiene el cambio
+    # The new object contains the change
     assert updated_context.cwd == new_path
-    # El objeto original permanece intacto
+    # The original object remains untouched
     assert initial_context.cwd == Path.cwd()
-    # Los valores no mencionados en replace se mantienen
+    # Values not specified in 'replace' are maintained
     assert updated_context.encoding == "utf-8"

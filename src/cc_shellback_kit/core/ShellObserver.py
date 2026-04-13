@@ -4,53 +4,53 @@ from typing import Any
 from .CommandResult import CommandResult
 
 
-class ShellObserver(ABC):  # Puede heredar de ABC si quieres marcarla como base
+class ShellObserver(ABC):  # Can inherit from ABC if you want to mark it as a base class
     """
-    Interfaz base para la observación de eventos del ciclo de vida de la Shell.
+    Base interface for observing Shell lifecycle events.
 
-    Esta clase actúa como una 'caja de herramientas' de hooks. Los métodos
-    tienen una implementación vacía por defecto para permitir que las
-    clases hijas solo sobrescriban los eventos que les interesa capturar.
+    This class acts as a 'toolbox' of hooks. Methods have empty default
+    implementations to allow child classes to override only the specific
+    events they are interested in capturing.
     """
 
     def on_session_start(self, shell_name: str):
         """
-        Se dispara al entrar en el contexto de la Shell (bloque 'with').
-        Útil para inicializar recursos de logging o telemetría.
+        Triggered when entering the Shell context ('with' block).
+        Useful for initializing logging resources or telemetry.
         """
         pass
 
     def on_session_end(self, shell_name: str, error: Exception = None):
         """
-        Se dispara al salir del contexto de la Shell.
-        Permite registrar si la sesión terminó de forma limpia o por una excepción.
+        Triggered when exiting the Shell context.
+        Allows logging whether the session ended cleanly or due to an exception.
         """
         pass
 
     def on_context_change(self, key: str, value: Any):
         """
-        Se dispara cuando un comando de estado (Virtual Builtin) muta el contexto.
-        Ejemplo: cambios en el CWD (Directorio de trabajo) o variables de entorno.
+        Triggered when a state command (Virtual Builtin) mutates the context.
+        Example: changes in the CWD (Working Directory) or environment variables.
         """
         pass
 
     def on_command_start(self, executable: str, final_args: list[str]):
         """
-        Se dispara justo antes de enviar un comando de efecto al sistema operativo.
-        Proporciona los argumentos finales tal cual serán ejecutados por el adaptador.
+        Triggered just before sending an effect command to the operating system.
+        Provides the final arguments exactly as they will be executed by the adapter.
         """
         pass
 
     def on_command_result(self, result: "CommandResult"):
         """
-        Se dispara tras recibir la respuesta de un comando de efecto.
-        Permite reaccionar al código de retorno, stdout y stderr.
+        Triggered after receiving the response from an effect command.
+        Allows reacting to the return code, stdout, and stderr.
         """
         pass
 
     def on_error(self, message: str, error: Exception = None):
         """
-        Se dispara cuando ocurre un error controlado o inesperado dentro del Core.
-        Funciona como un sumidero de errores para evitar que la lógica de negocio se ensucie.
+        Triggered when a controlled or unexpected error occurs within the Core.
+        Acts as an error sink to keep business logic clean.
         """
         pass

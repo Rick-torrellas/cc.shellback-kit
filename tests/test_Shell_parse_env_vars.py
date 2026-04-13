@@ -2,17 +2,17 @@ from cc_shellback_kit import Command
 
 
 def test_parse_env_vars_correct_format(shell_stub):
-    """Verifica que los argumentos clave=valor se parseen correctamente."""
+    """Verify that key=value arguments are parsed correctly."""
     args = ["VAR1=value1", "VAR2=value2", "VAR3=multiple=equals"]
 
-    # Acceso al método protegido para validación unitaria
+    # Accessing the protected method for unit validation
     result = shell_stub._parse_env_vars(args)
 
     assert result == {"VAR1": "value1", "VAR2": "value2", "VAR3": "multiple=equals"}
 
 
 def test_parse_env_vars_invalid_format(shell_stub):
-    """Verifica que los argumentos sin el signo '=' sean ignorados."""
+    """Verify that arguments without the '=' sign are ignored."""
     args = ["INVALID_VAR", "VALID=yes", "ANOTHER_INVALID"]
 
     result = shell_stub._parse_env_vars(args)
@@ -22,26 +22,26 @@ def test_parse_env_vars_invalid_format(shell_stub):
 
 
 def test_parse_env_vars_empty_list(shell_stub):
-    """Verifica el comportamiento con una lista vacía."""
+    """Verify behavior with an empty list."""
     result = shell_stub._parse_env_vars([])
     assert result == {}
 
 
 def test_handle_export_integration(shell_stub):
     """
-    Test de integración: Verifica que el comando 'export' use
-    _parse_env_vars y actualice el contexto.
+    Integration test: Verify that the 'export' command uses
+    _parse_env_vars and updates the context.
     """
     cmd = Command("export")
     cmd.add_args("DATABASE_URL=postgres://localhost", "DEBUG=True")
 
-    # Ejecutamos a través del dispatcher principal
+    # Execute through the main dispatcher
     shell_stub.run(cmd)
 
-    # Verificamos que el contexto de la shell se haya actualizado
+    # Verify that the shell context has been updated
     assert shell_stub.context.env["DATABASE_URL"] == "postgres://localhost"
     assert shell_stub.context.env["DEBUG"] == "True"
 
-    # Verificamos que el observer fue notificado del cambio de contexto
-    # (Se llama una vez por cada variable)
+    # Verify that the observer was notified of the context change
+    # (Called once for each variable)
     assert shell_stub.observer.on_context_change.called
