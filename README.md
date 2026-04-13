@@ -18,6 +18,8 @@ Built with Hexagonal Architecture (Ports and Adapters) principles, Shellback ens
 
 * [Installation](#installation)
 * [Usage](#usage)
+* [Architecture Components](#architecture-components)
+* [License](#license)
 
 ---
 
@@ -34,30 +36,69 @@ pip install cc.shellback-kit
 ```python
 from cc_shellback_kit import Bash, ConsoleLogObserver, Command
 
-# 1. We configure the observer to see the activity in the console
 observer = ConsoleLogObserver()
 
-# 2. We start the Shell using the context manager (with)
 with Bash(observer=observer) as shell:
     
-    # --- EXECUTION OF EXTERNAL COMMANDS ---
-    # We create a simple command: 'ls -la'
     cmd_list = Command("ls").add_args("-la")
     result = shell.run(cmd_list)
     
     if result.is_success():
         print(f"Files found:\n{result.standard_output}")
 
-    # --- STATE MANAGEMENT (VIRTUAL BUILT-INS) ---
-    # We change directory (this affects the SessionContext, not just the process)
     shell.run(Command("cd").add_args("/tmp"))
     
-    # We verify the change by running 'pwd'
     shell.run(Command("pwd"))
 
-    # --- ENVIRONMENT VARIABLES ---
-    # We export a variable that will persist during this 'with' block
     shell.run(Command("export").add_args("APP_STAGE=development", "DEBUG=true"))
 ```
 
+### Monitoring with Observers
+
+Use the MultiObserver to log activity to both the console and a JSON audit file simultaneously.
+
+```python
+from cc_shellback_kit import MultiObserver, ConsoleLogObserver, JSONFileObserver,Bash, Command
+
+audit_log = JSONFileObserver("audit.json")
+console = ConsoleLogObserver()
+monitor = MultiObserver([audit_log, console])
+
+with Bash(observer=monitor) as shell:
+    shell.run(Command("mkdir").add_args("test_folder"))
+    shell.run(Command("cd").add_args("test_folder"))
+    shell.run(Command("touch").add_args("hello.txt"))
+```
+
+### Fluent Argument Builder
+
+The ArgumentBuilder handles lists and types automatically:
+
+```python
+cmd = Command("apt-get").add_args("install", ["git", "vim", "tmux"], "-y")
+# Generates: ['apt-get', 'install', 'git', 'vim', 'tmux', '-y']
+```
+
+### Error Handling
+
+The CommandResult object provides detailed information about failed executions:
+
+```python
+result = shell.run(Command("wrong_cmd"))
+if not result.is_success():
+    print(f"Error {result.return_code}: {result.standard_error}")
+```
+
+---
+
+## 🧪 Architecture Components
+
+* Shell: The engine. It manages the lifecycle and coordinates between the SessionContext and the OS.
+* Command: A value object representing what to run.
+* CommandResult: Data class containing stdout, stderr, exit_code, and execution_time.
+* ShellObserver: An interface to hook into events like on_command_start or on_error.
+
+## 📄 License
+
+This project is licensed under the MIT License.
 
