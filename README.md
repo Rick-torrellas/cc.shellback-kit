@@ -14,7 +14,8 @@ Built with Hexagonal Architecture (Ports and Adapters) principles, Shellback ens
 
 ---
 
-## 📍 Contenido
+## 📍 Contents
+
 * [Installation](#installation)
 * [Usage](#usage)
 
@@ -31,31 +32,31 @@ pip install cc.shellback-kit
 ## Usage
 
 ```python
-from cc_shellback_kit import Bash, ConsoleLogObserver, Command, SessionContext
+from cc_shellback_kit import Bash, ConsoleLogObserver, Command
 
-# 1. Configuramos el observador para ver la actividad en consola
+# 1. We configure the observer to see the activity in the console
 observer = ConsoleLogObserver()
 
-# 2. Iniciamos la Shell usando el manejador de contexto (with)
+# 2. We start the Shell using the context manager (with)
 with Bash(observer=observer) as shell:
     
-    # --- EJECUCIÓN DE COMANDOS EXTERNOS ---
-    # Creamos un comando simple: 'ls -la'
+    # --- EXECUTION OF EXTERNAL COMMANDS ---
+    # We create a simple command: 'ls -la'
     cmd_list = Command("ls").add_args("-la")
     result = shell.run(cmd_list)
     
     if result.is_success():
-        print(f"Archivos encontrados:\n{result.standard_output}")
+        print(f"Files found:\n{result.standard_output}")
 
-    # --- MANEJO DE ESTADO (VIRTUAL BUILT-INS) ---
-    # Cambiamos de directorio (esto afecta al SessionContext, no solo al proceso)
+    # --- STATE MANAGEMENT (VIRTUAL BUILT-INS) ---
+    # We change directory (this affects the SessionContext, not just the process)
     shell.run(Command("cd").add_args("/tmp"))
     
-    # Verificamos el cambio ejecutando un 'pwd'
+    # We verify the change by running 'pwd'
     shell.run(Command("pwd"))
 
-    # --- VARIABLES DE ENTORNO ---
-    # Exportamos una variable que persistirá durante este bloque 'with'
+    # --- ENVIRONMENT VARIABLES ---
+    # We export a variable that will persist during this 'with' block
     shell.run(Command("export").add_args("APP_STAGE=development", "DEBUG=true"))
 ```
 

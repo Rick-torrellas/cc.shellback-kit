@@ -7,13 +7,13 @@ from ..core import ShellObserver, CommandResult
 
 class JSONFileObserver(ShellObserver):
     """
-    Registra toda la actividad de la Shell en un archivo JSON.
-    Ideal para auditoría técnica y análisis de datos posterior.
+    Records all Shell activity into a JSON file.
+    Ideal for technical auditing and subsequent data analysis.
     """
 
     def __init__(self, log_path: str = "shell_audit.json"):
         self.log_path = Path(log_path)
-        # Inicializamos el archivo si no existe
+        # Initialize the file if it does not exist
         if not self.log_path.exists():
             self._write_logs([])
 

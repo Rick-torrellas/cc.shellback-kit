@@ -2,6 +2,6 @@ from ..core import ShellObserver
 
 
 class SilentObserver(ShellObserver):
-    """No hace nada. Ideal para scripts de producción donde no quieres ruido."""
+    """Does nothing. Ideal for production scripts where you don't want noise."""
 
     pass

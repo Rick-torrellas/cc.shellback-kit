@@ -4,7 +4,7 @@ from cc_shellback_kit import CommandResult
 
 
 def test_command_result_initialization():
-    """Verifica que los valores por defecto se asignen correctamente."""
+    """Verify that default values are correctly assigned."""
     result = CommandResult()
     assert result.standard_output == ""
     assert result.standard_error == ""
@@ -14,13 +14,13 @@ def test_command_result_initialization():
 
 
 def test_is_success_true():
-    """Verifica que is_success() sea True cuando el código de retorno es 0."""
+    """Verify that is_success() returns True when the return code is 0."""
     result = CommandResult(return_code=0)
     assert result.is_success() is True
 
 
 def test_is_success_false():
-    """Verifica que is_success() sea False cuando el código de retorno no es 0."""
+    """Verify that is_success() returns False when the return code is not 0."""
     result = CommandResult(return_code=1)
     assert result.is_success() is False
 
@@ -29,7 +29,7 @@ def test_is_success_false():
 
 
 def test_json_parsing_success():
-    """Verifica que el método json() parsee correctamente un string JSON."""
+    """Verify that the json() method correctly parses a JSON string."""
     data = {"status": "ok", "items": [1, 2, 3]}
     json_str = json.dumps(data)
     result = CommandResult(standard_output=json_str)
@@ -39,21 +39,22 @@ def test_json_parsing_success():
 
 
 def test_json_parsing_failure():
-    """Verifica que el método json() lance un error con salida no válida."""
+    """Verify that the json() method raises an error with invalid output."""
     result = CommandResult(standard_output="No soy un JSON")
+    # Expecting a JSONDecodeError when parsing invalid strings
     with pytest.raises(json.JSONDecodeError):
         result.json()
 
 
 def test_pipe_operator_syntax():
     """
-    Verifica el comportamiento del operador pipe (|).
-    Según la implementación, debe devolver el stdout del comando anterior.
+    Verify the behavior of the pipe operator (|).
+    According to the implementation, it should return the stdout of the previous command.
     """
     stdout_content = "datos de salida"
     result = CommandResult(standard_output=stdout_content)
 
-    # En la implementación actual: CommandResult | Any -> str (standard_output)
+    # In the current implementation: CommandResult | Any -> str (standard_output)
     output = result | "otro_comando"
 
     assert output == stdout_content
@@ -61,7 +62,7 @@ def test_pipe_operator_syntax():
 
 
 def test_complex_result_data():
-    """Verifica la consistencia de un objeto con todos los campos llenos."""
+    """Verify the consistency of an object with all fields populated."""
     cmd = ["ls", "-la"]
     result = CommandResult(
         standard_output="total 0\n",

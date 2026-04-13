@@ -3,14 +3,14 @@ from cc_shellback_kit import ArgumentBuilder
 
 class TestArgumentBuilder:
     def test_add_single_argument(self):
-        """Verifica que se añadan argumentos simples correctamente."""
+        """Verifies that simple arguments are added correctly."""
         builder = ArgumentBuilder()
         builder.add_arg("ls")
         builder.add_arg("-la")
         assert builder.build() == ["ls", "-la"]
 
     def test_flatten_list_arguments(self):
-        """Verifica que las listas y tuplas se aplanen automáticamente."""
+        """Verifies that lists and tuples are automatically flattened."""
         builder = ArgumentBuilder()
         builder.add_arg(["git", "commit"])
         builder.add_arg("-m")
@@ -19,17 +19,17 @@ class TestArgumentBuilder:
         assert builder.build() == ["git", "commit", "-m", "Mensaje con espacios"]
 
     def test_ignore_none_and_empty_values(self):
-        """Verifica que los valores None o strings vacíos no se añadan."""
+        """Verifies that None values or empty strings are not added."""
         builder = ArgumentBuilder()
         builder.add_arg(None)
         builder.add_arg("")
-        builder.add_arg("  ")  # Espacios en blanco
+        builder.add_arg("  ")  # Whitespace strings
         builder.add_arg("python")
 
         assert builder.build() == ["python"]
 
     def test_fluent_interface(self):
-        """Verifica que los métodos sean encadenables (return self)."""
+        """Verifies that methods are chainable (return self)."""
         builder = ArgumentBuilder()
         result = builder.add_arg("cmd").add_flag("v").add_arg("file.txt")
 
@@ -37,7 +37,7 @@ class TestArgumentBuilder:
         assert builder.build() == ["cmd", "--v", "file.txt"]
 
     def test_unix_style_flags(self):
-        """Verifica el prefijo '--' para el estilo unix por defecto."""
+        """Verifies the '--' prefix for default Unix style."""
         builder = ArgumentBuilder(style="unix")
         builder.add_flag("force")
         builder.add_flag("output", "results.txt")
@@ -46,7 +46,7 @@ class TestArgumentBuilder:
         assert builder.build() == expected
 
     def test_windows_style_flags(self):
-        """Verifica el prefijo '/' para el estilo windows."""
+        """Verifies the '/' prefix for Windows style."""
         builder = ArgumentBuilder(style="windows")
         builder.add_flag("all")
         builder.add_flag("limit", 10)
@@ -55,14 +55,14 @@ class TestArgumentBuilder:
         assert builder.build() == expected
 
     def test_flag_name_cleaning(self):
-        """Verifica que los espacios en los nombres de flags se conviertan en underscores."""
+        """Verifies that spaces in flag names are converted to underscores."""
         builder = ArgumentBuilder()
         builder.add_flag("ignore case")
 
         assert builder.build() == ["--ignore_case"]
 
     def test_complex_nesting(self):
-        """Verifica un caso complejo con anidación profunda de listas."""
+        """Verifies a complex case with deep list nesting."""
         builder = ArgumentBuilder()
         builder.add_arg(["docker", ["run", ["-d", "--name"]], "my_container"])
 

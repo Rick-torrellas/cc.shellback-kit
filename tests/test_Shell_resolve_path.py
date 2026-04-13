@@ -2,20 +2,21 @@ from pathlib import Path
 
 
 def test_resolve_path_relative(shell_stub, session_context):
-    """Debe resolver una ruta relativa basándose en el CWD del contexto."""
-    # Preparamos el argumento
+    """Should resolve a relative path based on the context's CWD."""
+    # Prepare the argument
     folder_name = "test_folder"
     args = [folder_name]
 
     resolved = shell_stub._resolve_path(args)
 
-    # La ruta esperada es context.cwd / folder_name
+    # Expected path is context.cwd / folder_name
     expected = (session_context.cwd / folder_name).resolve()
     assert resolved == expected
 
 
 def test_resolve_path_absolute(shell_stub):
-    """Debe respetar una ruta absoluta ignorando el CWD actual."""
+    """Should respect an absolute path while ignoring the current CWD."""
+    # Define an absolute path depending on the operating system
     absolute_str = "/tmp/data" if Path("/tmp").exists() else "C:\\Windows"
     args = [absolute_str]
 
@@ -26,7 +27,7 @@ def test_resolve_path_absolute(shell_stub):
 
 
 def test_resolve_path_home_default(shell_stub):
-    """Debe devolver el Home del usuario si la lista de argumentos está vacía."""
+    """Should return the user's Home directory if the argument list is empty."""
     args = []
 
     resolved = shell_stub._resolve_path(args)
@@ -36,7 +37,7 @@ def test_resolve_path_home_default(shell_stub):
 
 
 def test_resolve_path_with_tilde(shell_stub):
-    """Debe expandir el símbolo ~ correctamente."""
+    """Should correctly expand the tilde (~) symbol."""
     args = ["~/documents"]
 
     resolved = shell_stub._resolve_path(args)
@@ -46,12 +47,12 @@ def test_resolve_path_with_tilde(shell_stub):
 
 
 def test_resolve_path_complex_relative(shell_stub, session_context):
-    """Debe manejar navegación por niveles (..) correctamente."""
-    # Creamos una estructura: /tmp/base/subdir -> ../other
+    """Should correctly handle level navigation (..)."""
+    # Create a structure: e.g., /tmp/base/subdir -> ../other
     args = ["../other"]
 
     resolved = shell_stub._resolve_path(args)
 
-    # Debe subir un nivel desde el CWD de la fixture y añadir 'other'
+    # It should go up one level from the fixture's CWD and append 'other'
     expected = (session_context.cwd.parent / "other").resolve()
     assert resolved == expected
