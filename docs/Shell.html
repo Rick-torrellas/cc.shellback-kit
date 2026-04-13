@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shell ABC | Abstract Execution Engine Documentation</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Google Fonts for clean typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="sidebar">
+        <h2>DOCUMENTATION</h2>
+        <nav>
+            <a href="#overview" class="active">Overview</a>
+            <a href="#architecture">Architecture</a>
+            <a href="#initialization">Initialization</a>
+            <a href="#core-methods">Core Methods</a>
+            <a href="#virtual-commands">Virtual Commands</a>
+            <a href="#external-execution">External Execution</a>
+            <a href="#helpers">Helpers & Utilities</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <header>
+            <h1>Shell <span style="font-size: 0.9rem; background: #e2e8f0; padding: 2px 12px; border-radius: 30px; color:#1e293b;">Abstract Base Class</span></h1>
+            <p class="subtitle">Asynchronous-ready command dispatcher &nbsp;•&nbsp; Virtual state management &nbsp;•&nbsp; Extensible shell emulation</p>
+        </header>
+
+        <section id="overview">
+            <h2>📘 Overview</h2>
+            <p><strong>Shell</strong> is an abstract foundation for building command-line interpreters or remote execution engines. It separates <strong>state-changing virtual commands</strong> (<code>cd</code>, <code>export</code>) from <strong>external process execution</strong>. The class provides built-in context (<code>SessionContext</code>), observer hooks, timeout control, and a clean dispatcher pattern.</p>
+            <div class="method-box">
+                <strong>🔍 Key Design:</strong> Commands like <code>cd</code> and <code>export</code> never touch the real OS — they update the internal <code>SessionContext</code> (cwd, environment). All other commands are delegated to subprocesses using platform‑specific formatting via the abstract <code>_format_command</code> method.
+            </div>
+        </section>
+
+        <section id="architecture">
+            <h2>🏛️ Class Architecture</h2>
+            <table>
+                <thead>
+                    <tr><th>Component</th><th>Description</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>context: SessionContext</code></td><td>Holds working directory, environment variables, encoding, and runtime state.</td></tr>
+                    <tr><td><code>observer: ShellObserver</code></td><td>Callback handler for session events, command lifecycle, errors, and context changes.</td></tr>
+                    <tr><td><code>default_timeout: float</code></td><td>Default timeout (seconds) for external commands.</td></tr>
+                    <tr><td><code>_virtual_builtins: Dict[str, Callable]</code></td><td>Registry mapping built-in names to internal handlers (<code>cd</code>, <code>export</code>).</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="initialization">
+            <h2>⚙️ Initializer</h2>
+            <div class="signature">__init__(context: Optional[SessionContext] = None, observer: Optional[ShellObserver] = None, default_timeout: float = 30.0)</div>
+            <p>Creates a new shell instance with custom context and observer. If no context is provided, a fresh <code>SessionContext</code> is created. The observer defaults to a no‑op <code>ShellObserver</code>. The <code>default_timeout</code> defines the maximum runtime for any external subprocess.</p>
+            <div class="method-card">
+                <h3>✨ What's initialized internally</h3>
+                <p>• <code>self.context</code> – holds environment and current working directory.<br>
+                • <code>self.observer</code> – tracks events: session start/end, context changes, command results.<br>
+                • <code>self._virtual_builtins</code> – maps "cd" → <code>_handle_cd</code> and "export" → <code>_handle_export</code>.</p>
+            </div>
+        </section>
+
+        <section id="core-methods">
+            <h2>🔁 Core Public API</h2>
+
+            <div class="method-card">
+                <h3>run(command, timeout=None) → CommandResult</h3>
+                <p>Main dispatcher. Checks if <code>command.executable</code> matches a virtual built‑in. If yes, invokes the internal handler; otherwise, delegates to external execution (<code>_run_external</code>). Returns a <code>CommandResult</code> containing stdout, stderr, return code, and execution time.</p>
+            </div>
+
+            <div class="method-card">
+                <h3>__enter__() / __exit__(...)</h3>
+                <p>Context manager support. On enter, calls <code>observer.on_session_start(class_name)</code>. On exit, calls <code>observer.on_session_end(...)</code> with any exception details. Ideal for scoped shell sessions.</p>
+            </div>
+
+            <div class="method-card">
+                <h3>_format_command(executable, args) → list[str] <span class="badge">abstract</span></h3>
+                <p>Each child shell must implement this method to transform the command into the target shell syntax (e.g., Bash: <code>["-c", "executable args"]</code>, PowerShell: <code>["-Command", ...]</code>). Used during external execution to build the final argument vector.</p>
+            </div>
+        </section>
+
+        <section id="virtual-commands">
+            <h2>📁 Virtual Built‑in Commands (State Management)</h2>
+            <p>Intercepted commands that mutate <code>SessionContext</code> without spawning OS processes.</p>
+
+            <div class="method-card">
+                <h3>_handle_cd(command) → CommandResult</h3>
+                <p>Changes the current working directory inside the context. Resolves relative paths against current <code>cwd</code>, expands <code>~</code> to home directory, and validates that the target exists and is a directory. On success, updates <code>self.context</code> (using <code>replace()</code> for immutability) and notifies observer with <code>on_context_change("cwd", new_path)</code>. Returns success message or error.</p>
+            </div>
+
+            <div class="method-card">
+                <h3>_handle_export(command) → CommandResult</h3>
+                <p>Updates environment variables. If no arguments are given, returns a string representation of the current environment. Otherwise, parses key=value pairs via <code>_parse_env_vars</code> and merges them into a new environment dict. For each updated variable, triggers <code>observer.on_context_change(f"env.{key}", value)</code>. Returns a count of updated variables.</p>
+            </div>
+        </section>
+
+        <section id="external-execution">
+            <h2>🖥️ External Execution Logic</h2>
+            <div class="method-card">
+                <h3>_run_external(command, timeout) → CommandResult</h3>
+                <p>Handles any non‑virtual command by executing a real OS subprocess.</p>
+                <p><strong>Step by step:</strong><br>
+                1️⃣ <code>_validate_executable</code> – resolves full path using <code>shutil.which</code> (raises <code>CommandNotFoundError</code> if missing).<br>
+                2️⃣ Builds final arguments using <code>ArgumentBuilder</code> + <code>_format_command</code> to respect shell‑specific syntax.<br>
+                3️⃣ Notifies observer via <code>on_command_start</code> before execution.<br>
+                4️⃣ Runs <code>subprocess.run</code> with current context’s <code>cwd</code>, <code>env</code>, <code>encoding</code>, and timeout.<br>
+                5️⃣ Captures stdout/stderr, return code, execution time, and returns a <code>CommandResult</code>.<br>
+                6️⃣ Catches <code>CommandNotFoundError</code> (return code 127) and <code>TimeoutExpired</code> errors gracefully.</p>
+            </div>
+        </section>
+
+        <section id="helpers">
+            <h2>🛠️ Helper Methods & Utilities</h2>
+            <table>
+                <thead>
+                    <tr><th>Method</th><th>Description</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>_validate_executable(executable)</code></td><td>Uses <code>shutil.which</code> to locate absolute path; raises <code>CommandNotFoundError</code> if not found.</td></tr>
+                    <tr><td><code>_resolve_path(args)</code></td><td>Converts command arguments into a <code>Path</code> object. Defaults to home directory. Expands user (<code>~</code>) and resolves relative paths against current <code>cwd</code>.</td></tr>
+                    <tr><td><code>_parse_env_vars(args)</code></td><td>Parses a list of strings like <code>["KEY1=value", "KEY2=value2"]</code> into a dictionary. Splits on the first <code>'='</code> only.</td></tr>
+                    <tr><td><code>_notify_error(message, error, return_code)</code></td><td>Triggers <code>observer.on_error</code> and returns a <code>CommandResult</code> with error message and given return code.</td></tr>
+                </tbody>
+            </table>
+            <div class="method-box">
+                ⚡ <strong>Performance & safety:</strong> Context updates use <code>replace()</code> (immutable approach). Virtual commands never invoke the OS, making state changes extremely fast and side‑effect free.
+            </div>
+        </section>
+
+        <section id="datastructures">
+            <h2>📦 Supporting Classes (inferred)</h2>
+            <p>While not fully implemented in this snippet, the following types are essential for the Shell abstraction:</p>
+            <ul>
+                <li><strong>SessionContext</strong> – holds <code>cwd</code> (Path), <code>env</code> (Dict[str, str]), <code>encoding</code> (str), and possibly other session metadata.</li>
+                <li><strong>ShellObserver</strong> – defines callbacks: <code>on_session_start</code>, <code>on_session_end</code>, <code>on_command_start</code>, <code>on_command_result</code>, <code>on_context_change</code>, <code>on_error</code>.</li>
+                <li><strong>CommandResult</strong> – dataclass with attributes: <code>standard_output</code>, <code>standard_error</code>, <code>return_code</code>, <code>execution_time</code> (optional), <code>command_sent</code> (optional).</li>
+                <li><strong>CommandNotFoundError</strong> – custom exception raised when executable is missing.</li>
+                <li><strong>ArgumentBuilder</strong> – utility to flatten and build argument lists.</li>
+            </ul>
+        </section>
+
+        <section id="example-usage">
+            <h2>🧪 Example: Implementing a Concrete Shell (Bash)</h2>
+            <div class="method-box">
+                <pre style="margin:0; font-family:'Fira Code', monospace; font-size:0.85rem; overflow-x:auto;"><code>class BashShell(Shell):
+    def _format_command(self, executable: str, args: list[str]) -> list[str]:
+        # For bash, we forward the full command as a single string via -c
+        full_cmd = f"{executable} {' '.join(args)}" if args else executable
+        return ["-c", full_cmd]
+
+# Usage
+with BashShell(default_timeout=10.0) as shell:
+    result = shell.run(Command("ls", ["-la"]))
+    print(result.standard_output)
+    shell.run(Command("cd", ["/tmp"]))   # virtual cd
+    shell.run(Command("export", ["EDITOR=nano"]))</code></pre>
+                <p style="margin-top: 0.75rem;">The observer can be used to log every command or track real-time context changes.</p>
+            </div>
+        </section>
+
+        <section id="design-notes">
+            <h2>📐 Design & Extension Points</h2>
+            <ul>
+                <li><strong>Command interception</strong>: any new virtual command can be added by extending <code>_virtual_builtins</code> in a subclass.</li>
+                <li><strong>Timeout propagation</strong>: each <code>run()</code> call can override the default timeout, providing per‑command flexibility.</li>
+                <li><strong>Observer pattern</strong>: ideal for logging, metrics, or real-time UI updates without coupling to shell logic.</li>
+                <li><strong>Immutability</strong>: context is replaced rather than mutated, enabling state snapshots and safe rollbacks.</li>
+            </ul>
+        </section>
+
+        <footer style="margin-top: 2rem; font-size: 0.8rem; text-align: center; color: #94a3b8; border-top: 1px solid var(--border); padding-top: 2rem;">
+            Shell ABC Documentation — Pure HTML + CSS | Abstract execution layer for stateful command processing.
+        </footer>
+    </div>
+</body>
+</html>
