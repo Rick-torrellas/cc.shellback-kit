@@ -1,46 +1,240 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <title>Documento HTML Puro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>ShellObserver | Lifecycle & Telemetry Interface</title>
+    <!-- Google Fonts: Inter + Fira Code for modern dev docs -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-    <header>
-        <h1>Archivo HTML Puro</h1>
-        <p>Estructura semántica y diseño moderno en un solo archivo</p>
+<!-- fixed sidebar navigation -->
+<aside class="sidebar">
+    <h2>📘 DOCUMENTATION</h2>
+    <nav>
+        <a href="#overview" class="active">📌 Overview</a>
+        <a href="#lifecycle-hooks">🔄 Session Lifecycle</a>
+        <a href="#context-events">⚙️ Context & State</a>
+        <a href="#command-events">⚡ Command Execution</a>
+        <a href="#error-handling">⚠️ Error Sink</a>
+        <a href="#usage-example">💡 Usage Example</a>
+    </nav>
+</aside>
+
+<main class="main-content">
+    <header id="repository">
+        <h1>ShellObserver <span class="badge">Base Interface</span></h1>
+        <div class="subtitle">
+            Observer / Hook interface for shell lifecycle events — session start/end, context changes, command instrumentation, and error aggregation.
+        </div>
+        <p style="margin-top: 1rem; font-size: 0.95rem;">
+            <code>class ShellObserver(ABC)</code> · Designed as a toolbox of hooks with empty default implementations.  
+            Implement only the events you need. Perfect for logging, telemetry, debugging or auditing shell interactions.
+        </p>
     </header>
 
-    <main>
-        <h2>Información del Documento</h2>
-        <p>Este es un ejemplo de un archivo HTML autónomo. No requiere archivos CSS externos ni librerías de terceros para visualizarse correctamente.</p>
+    <!-- Overview + interface description -->
+    <section id="overview">
+        <h2>🔍 Abstract Observer Contract</h2>
+        <p>
+            The <code>ShellObserver</code> acts as a <strong>bridge between the shell core and external monitoring tools</strong>. 
+            It does not impose any logic; instead, it provides <strong>optional hooks</strong> that child classes can override 
+            to capture granular lifecycle events. This pattern keeps business logic decoupled and promotes clean instrumentation.
+        </p>
+        <div class="method-box" style="margin-top: 1rem;">
+            <strong>✨ Key characteristics:</strong><br>
+            ✅ Derived from <code>ABC</code> (Abstract Base Class) — explicit base for observers.<br>
+            ✅ All methods have <code>pass</code> implementations — no forced overrides.<br>
+            ✅ Each hook receives rich contextual information: shell name, exceptions, command args, result objects.<br>
+            ✅ Designed to integrate with context managers, virtual builtins, and subprocess executors.
+        </div>
+    </section>
 
-        <div class="card">
-            <strong>Nota Importante:</strong> El uso de archivos HTML puros es ideal para documentación rápida, informes estáticos o plantillas de correo electrónico donde la portabilidad es clave.
+    <!-- Lifecycle hooks: session start / session end -->
+    <section id="lifecycle-hooks">
+        <h2>🔄 Session Lifecycle Hooks</h2>
+        <p>Monitor the lifespan of a shell context: from entering the <code>with</code> block until exit (even on exceptions).</p>
+        
+        <div class="method-card">
+            <h3>📌 on_session_start(shell_name: str)</h3>
+            <p>Triggered when entering the Shell context (<strong>'with' block</strong>). Use this to initialize logging resources, start telemetry timers, or allocate session-specific handles.</p>
+            <div class="param-list"><strong>Parameters:</strong> shell_name → identifier of the current shell instance (e.g., "bash", "zsh", "custom-shell").</div>
+        </div>
+        
+        <div class="method-card">
+            <h3>🏁 on_session_end(shell_name: str, error: Exception = None)</h3>
+            <p>Triggered when exiting the Shell context. Allows you to log whether the session ended cleanly or due to an unhandled exception. Perfect for sending session metrics or cleaning up resources.</p>
+            <div class="param-list"><strong>Parameters:</strong> shell_name (str) , error → exception if any occurred, otherwise <code>None</code>.</div>
+        </div>
+    </section>
+
+    <!-- context & state changes: on_context_change -->
+    <section id="context-events">
+        <h2>⚙️ Context & State Mutation</h2>
+        <p>React to changes in the shell's internal state, such as working directory (CWD), environment variables, or virtual built-in commands.</p>
+        <div class="method-card">
+            <h3>🔄 on_context_change(key: str, value: Any)</h3>
+            <p>Triggered whenever a state command (e.g., <code>cd</code>, <code>export</code>, or other virtual builtins) mutates the session context. 
+            Ideal for tracking directory traversal, environment modifications, or custom state flags in real time.</p>
+            <div class="param-list"><strong>key:</strong> context property name (e.g., "cwd", "PATH", "VIRTUAL_ENV")<br>
+            <strong>value:</strong> new value assigned (any type).</div>
+        </div>
+        <div class="method-box" style="margin-top: 0.5rem;">
+            💡 <strong>Use case:</strong> maintain a breadcrumb of directory changes, detect when an env var is unset, or sync UI with shell state.
+        </div>
+    </section>
+
+    <!-- Command execution events: start + result -->
+    <section id="command-events">
+        <h2>⚡ Command Execution Hooks</h2>
+        <p>Instrument every external (effect) command before execution and after the result is returned.</p>
+        
+        <div class="method-card">
+            <h3>▶️ on_command_start(executable: str, final_args: list[str])</h3>
+            <p>Invoked just before dispatching an effect command to the underlying operating system. 
+            Provides the fully resolved arguments as they will be executed by the adapter. Use this for command auditing, security logging, or custom pre-execution validation.</p>
+            <div class="param-list"><strong>executable:</strong> binary or script name (e.g., "ls", "git", "python")<br>
+            <strong>final_args:</strong> list of argument strings after shell expansion & parsing.</div>
+        </div>
+        
+        <div class="method-card">
+            <h3>📊 on_command_result(result: "CommandResult")</h3>
+            <p>Triggered after receiving the response from an effect command. The <code>CommandResult</code> object encapsulates return code, stdout, stderr, and execution metadata. 
+            Ideal for metrics aggregation, failure alerts, or capturing output for logs.</p>
+            <div class="param-list"><strong>result:</strong> object with attributes: <code>.returncode</code>, <code>.stdout</code>, <code>.stderr</code>, <code>.execution_time</code> (if measured).</div>
         </div>
 
-        <h2>Características</h2>
-        <ul>
-            <li><strong>Diseño Responsivo:</strong> Se adapta automáticamente a pantallas de móviles y computadoras.</li>
-            <li><strong>Estilos Encapsulados:</strong> Todo el CSS está dentro de la etiqueta <code>&lt;style&gt;</code>.</li>
-            <li><strong>Semántica Correcta:</strong> Utiliza etiquetas HTML5 como header, main y footer.</li>
-            <li><strong>Velocidad:</strong> Al no tener peticiones externas, la carga es instantánea.</li>
-        </ul>
+        <!-- quick summary table for command flow -->
+        <table style="margin-top: 1rem;">
+            <thead>
+                <tr><th>Hook</th><th>Timing</th><th>Typical Use</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>on_command_start</code></td><td>Before syscall</td><td>audit commands, measure latency, prevent dangerous invocations</td></tr>
+                <tr><td><code>on_command_result</code></td><td>After command finishes</td><td>log output, track error rates, store structured telemetry</td></tr>
+            </tbody>
+        </table>
+    </section>
 
-        <h2>Instrucciones</h2>
-        <ol>
-            <li>Copia el código fuente completo.</li>
-            <li>Pégalo en un editor de texto (como Notepad, VS Code o Sublime Text).</li>
-            <li>Guarda el archivo con la extensión <code>.html</code>.</li>
-            <li>Haz doble clic en el archivo para verlo en tu navegador.</li>
-        </ol>
-    </main>
+    <!-- Error handling: error sink -->
+    <section id="error-handling">
+        <h2>⚠️ Error Sink & Diagnostics</h2>
+        <div class="method-card">
+            <h3>🚨 on_error(message: str, error: Exception = None)</h3>
+            <p>Central error hook triggered when a controlled or unexpected error occurs within the Core. Acts as a global error sink, keeping business logic clean. 
+            Use it to forward errors to external monitoring (Sentry, DataDog) or to aggregate internal failures for debugging.</p>
+            <div class="param-list"><strong>message:</strong> human-readable error description. <br>
+            <strong>error:</strong> optional exception instance for stack traces and advanced context.</div>
+        </div>
+        <div class="method-box">
+            🧩 <strong>Design philosophy:</strong> Instead of try/catch blocks scattered across the shell core, observers receive <code>on_error</code> calls to centralize fault reporting.
+        </div>
+    </section>
 
-    <footer>
-        &copy; 2024 - Documento Generado por IA - Sin Dependencias Externas
-    </footer>
+    <!-- usage example section: python snippet to illustrate observer implementation -->
+    <section id="usage-example">
+        <h2>💡 Practical Usage Example (Python)</h2>
+        <p>Implement your own observer to track session duration, command history, and errors. The snippet below shows a concrete <code>TelemetryObserver</code> that overrides several hooks.</p>
+        <div style="background: #0f172a; color: #e2e8f0; padding: 1.2rem; border-radius: 12px; overflow-x: auto; font-family: 'Fira Code', monospace; font-size: 0.85rem;">
+<pre style="margin: 0; color: #cbd5e1;">
+<span style="color: #94a3b8;">from typing import Any</span>
+<span style="color: #94a3b8;">from shell_observer import ShellObserver, CommandResult</span>
 
+<span style="color: #fbbf24;">class TelemetryObserver(ShellObserver):</span>
+    <span style="color: #a5f3c3;">def on_session_start(self, shell_name: str):</span>
+        print(f"[📡] Session started: {shell_name}")
+        self.command_count = 0
+
+    <span style="color: #a5f3c3;">def on_session_end(self, shell_name: str, error: Exception = None):</span>
+        if error:
+            print(f"[⚠️] Session ended with error: {error}")
+        else:
+            print(f"[✅] Clean session end. Commands run: {self.command_count}")
+
+    <span style="color: #a5f3c3;">def on_context_change(self, key: str, value: Any):</span>
+        print(f"[🌿] context mutated: {key} → {value}")
+
+    <span style="color: #a5f3c3;">def on_command_start(self, executable: str, final_args: list[str]):</span>
+        self.command_count += 1
+        print(f"[⚡] exec: {executable} {' '.join(final_args)}")
+
+    <span style="color: #a5f3c3;">def on_command_result(self, result: CommandResult):</span>
+        if result.returncode != 0:
+            print(f"[❌] command failed (rc={result.returncode})")
+        else:
+            print(f"[✔️] success → {len(result.stdout)} bytes out")
+
+    <span style="color: #a5f3c3;">def on_error(self, message: str, error: Exception = None):</span>
+        print(f"[🔥] Core error: {message} | {error}")
+
+<span style="color: #e2e8f0;"># Usage inside shell context:</span>
+<span style="color: #e2e8f0;"># with Shell(shell_name="mybash", observer=TelemetryObserver()) as sh:</span>
+<span style="color: #e2e8f0;">#     sh.run("ls -la")</span>
+</pre>
+        </div>
+        <p style="margin-top: 1rem;">✅ <strong>Extensibility:</strong> Because each method has a default empty implementation, your custom observer only needs to override the relevant hooks — no boilerplate required.</p>
+    </section>
+
+    <!-- method reference table (compact view) -->
+    <section>
+        <h2>📋 Complete Method Reference</h2>
+        <table>
+            <thead>
+                <tr><th>Method signature</th><th>Description</th><th>When called</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>on_session_start(shell_name: str)</code></td><td>Initialize logging / telemetry resources</td><td>On entry to shell context</td></tr>
+                <tr><td><code>on_session_end(shell_name, error)</code></td><td>Cleanup & session summary</td><td>Exit from <code>with</code> block</td></tr>
+                <tr><td><code>on_context_change(key, value)</code></td><td>Track state mutations (CWD, env)</td><td>Virtual built-in command</td></tr>
+                <tr><td><code>on_command_start(executable, final_args)</code></td><td>Pre-execution hook for external commands</td><td>Before OS subprocess call</td></tr>
+                <tr><td><code>on_command_result(result: CommandResult)</code></td><td>Post-execution analysis</td><td>After command finishes</td></tr>
+                <tr><td><code>on_error(message, error)</code></td><td>Central error handling / forwarding</td><td>On any core exception or controlled failure</td></tr>
+            </tbody>
+        </table>
+        <div class="method-box" style="margin-top: 1rem;">
+            💎 <strong>Design note:</strong> The <code>ShellObserver</code> interface does not rely on inheritance constraints — you can register multiple observers if needed, following the observer pattern.
+        </div>
+    </section>
+
+    <!-- footer / additional notes -->
+    <div style="margin-top: 2rem; text-align: left; font-size: 0.8rem; border-top: 1px solid var(--border); padding-top: 1.5rem; color: #64748b;">
+        🧪 ShellObserver — part of the core instrumentation layer. Compatible with any shell adapter that implements event broadcasting.  
+        All hooks are no-op by default, ensuring zero overhead when observers are not attached.
+    </div>
+</main>
+
+<!-- simple scroll spy to highlight active section (lightweight) -->
+<script>
+    (function() {
+        const sections = document.querySelectorAll('section[id]');
+        const navLinks = document.querySelectorAll('.sidebar nav a');
+        
+        function setActiveLink() {
+            let current = '';
+            const scrollPos = window.scrollY + 150;
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionBottom = sectionTop + section.offsetHeight;
+                if (scrollPos >= sectionTop && scrollPos < sectionBottom) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                const href = link.getAttribute('href').substring(1);
+                if (href === current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', setActiveLink);
+        window.addEventListener('resize', setActiveLink);
+        setActiveLink();
+    })();
+</script>
 </body>
 </html>

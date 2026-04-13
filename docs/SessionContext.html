@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>SessionContext | Persistent Shell State Documentation</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <h2>📄 Documentation</h2>
+        <nav>
+            <a href="#overview" class="active">Overview</a>
+            <a href="#class-definition">Class Definition</a>
+            <a href="#attributes">Attributes</a>
+            <a href="#usage-examples">Usage Examples</a>
+            <a href="#behavior">Behavior & Notes</a>
+        </nav>
+        <div style="margin-top: 2rem; font-size: 0.75rem; color: #64748b; border-top: 1px solid #334155; padding-top: 1rem;">
+            <span>SessionContext v1.0</span><br>
+            <span>Persistent shell state</span>
+        </div>
+    </aside>
+
+    <!-- Main Documentation Content -->
+    <main class="main-content">
+        <header>
+            <h1>SessionContext <span class="badge-immutable">Frozen Dataclass</span></h1>
+            <div class="subtitle">Maintains persistent state across shell executions — cwd, environment, and encoding.</div>
+        </header>
+
+        <!-- OVERVIEW SECTION -->
+        <section id="overview">
+            <h2>🔍 Overview</h2>
+            <p><code>SessionContext</code> is an immutable dataclass designed to hold the execution context for a shell or REPL environment across multiple command invocations. It preserves the <strong>current working directory</strong>, a dictionary of <strong>environment variables</strong>, and the active <strong>character encoding</strong>. Because the class is frozen (<code>frozen=True</code>), instances are hashable and thread‑safe, encouraging explicit state transitions via replacement or factory methods.</p>
+            <div class="method-box">
+                <strong>🎯 Primary responsibility:</strong> Encapsulate shell session state to ensure consistent behavior across sequential commands, preventing global variable side effects.
+            </div>
+        </section>
+
+        <!-- CLASS DEFINITION (complete dataclass signature) -->
+        <section id="class-definition">
+            <h2>📦 Class Definition</h2>
+            <pre><code>@dataclass(frozen=True)
+class SessionContext:
+    """Maintains persistent state across Shell executions."""
+    
+    cwd: Path = field(default_factory=Path.cwd)
+    env: Dict[str, str] = field(default_factory=dict)
+    encoding: str = "utf-8"</code></pre>
+            <p>The <strong>frozen</strong> decorator guarantees immutability after construction. All fields are read‑only, making <code>SessionContext</code> ideal for functional updates or storing in caches.</p>
+            <table>
+                <thead>
+                    <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>cwd</code></td><td><code>Path</code></td><td>Current working directory for shell commands. Defaults to the system's current working directory via <code>Path.cwd()</code>.</td></tr>
+                    <tr><td><code>env</code></td><td><code>Dict[str, str]</code></td><td>Environment variables as key-value pairs. Initially an empty dictionary.</td></tr>
+                    <tr><td><code>encoding</code></td><td><code>str</code></td><td>Character encoding used for I/O operations (e.g., subprocess or file handling). Defaults to <code>"utf-8"</code>.</td></tr>
+                </tbody>
+            </table>
+            <div class="method-card">
+                <h3>✨ Immutability & Default Factories</h3>
+                <p><code>field(default_factory=Path.cwd)</code> ensures that each new instance computes a fresh <code>cwd</code> value at runtime, rather than sharing a single path reference. Similarly, <code>env</code> uses <code>default_factory=dict</code> to create independent environment dictionaries. Because the dataclass is frozen, you cannot mutate <code>cwd</code> or <code>env</code> after creation — any change produces a new instance.</p>
+            </div>
+        </section>
+
+        <!-- ATTRIBUTES TABLE with detailed descriptions -->
+        <section id="attributes">
+            <h2>📋 Attributes & Field Behavior</h2>
+            <p>The three primary attributes define the persistent session contract. Below you'll find deeper insight into each field:</p>
+            
+            <div class="method-card">
+                <h3>cwd : Path</h3>
+                <p><strong>Current Working Directory</strong> – any relative paths executed in the shell will resolve relative to this directory. The default value is obtained via <code>Path.cwd()</code> at instantiation time, meaning each <code>SessionContext</code> captures the actual process working directory on creation. Frozen state guarantees that the working directory cannot be changed without creating a new context.</p>
+                <div><span class="type-hint">Path object</span> <span class="type-hint">Immutable</span></div>
+            </div>
+
+            <div class="method-card">
+                <h3>env : Dict[str, str]</h3>
+                <p><strong>Environment Variables Dictionary</strong> – stores key-value string pairs that represent shell environment variables. This dictionary is independent per instance (default factory ensures unique dict). For typical shell usage, this may include <code>PATH</code>, <code>HOME</code>, or custom variables. Because the context is frozen, the dictionary is also read‑only; to update environment variables you must create a new context (e.g., using <code>replace</code> or by constructing a fresh instance).</p>
+                <div><span class="type-hint">Dict[str, str]</span> – mutable default factory but frozen wrapper prevents direct mutation</div>
+            </div>
+
+            <div class="method-card">
+                <h3>encoding : str</h3>
+                <p><strong>Character Encoding</strong> – defines the text encoding for standard streams, file I/O, and subprocess communication. The default is <code>"utf-8"</code>, the modern standard. Changing the encoding allows compatibility with legacy systems or different locales.</p>
+                <div><span class="type-hint">Literal string</span> – recommended values: 'utf-8', 'latin-1', 'cp1252'</div>
+            </div>
+
+            <h3 style="margin-top: 1rem;">📌 Field Summary</h3>
+            <table>
+                <thead>
+                    <tr><th>Field</th><th>Type</th><th>Default</th><th>Immutability</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>cwd</code></td><td>Path</td><td><code>Path.cwd()</code> (dynamic)</td><td>Frozen → read-only</td></tr>
+                    <tr><td><code>env</code></td><td>Dict[str, str]</td><td><code>{}</code> (new dict per instance)</td><td>Frozen → read-only</td></tr>
+                    <tr><td><code>encoding</code></td><td>str</td><td><code>"utf-8"</code></td><td>Frozen → read-only</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- USAGE EXAMPLES (python pseudo code + realistic shell scenario) -->
+        <section id="usage-examples">
+            <h2>⚙️ Usage Examples</h2>
+            <p>Typical patterns for constructing and “updating” a <code>SessionContext</code> in a persistent shell environment. Since the class is frozen, modifications produce new instances — this aligns with functional state management.</p>
+            
+            <h3>📌 Basic instantiation</h3>
+            <pre><code>from pathlib import Path
+from dataclasses import dataclass, field
+from typing import Dict
+
+# Assuming SessionContext definition from above
+initial_context = SessionContext()
+print(initial_context.cwd)      # /current/working/directory
+print(initial_context.env)      # {}
+print(initial_context.encoding) # utf-8</code></pre>
+
+            <h3>📌 Custom session with specific working directory & env</h3>
+            <pre><code>custom_env = {"EDITOR": "vim", "LANG": "en_US.UTF-8"}
+project_context = SessionContext(
+    cwd=Path("/home/user/projects/myapp"),
+    env=custom_env,
+    encoding="utf-8"
+)
+# Access fields
+print(project_context.env["EDITOR"])  # vim</code></pre>
+
+            <h3>📌 Updating context (immutable approach)</h3>
+            <p>Because <code>frozen=True</code> disables direct assignment, use <code>dataclasses.replace</code> or construct new contexts:</p>
+            <pre><code>from dataclasses import replace
+
+# create new context with changed cwd
+old_ctx = SessionContext(cwd=Path("/initial/path"))
+new_ctx = replace(old_ctx, cwd=Path("/new/workspace"))
+
+print(old_ctx.cwd)  # /initial/path
+print(new_ctx.cwd)  # /new/workspace
+
+# To update environment variables, merge and create a fresh instance
+updated_env = {**old_ctx.env, "NEW_VAR": "value"}
+refreshed_ctx = replace(old_ctx, env=updated_env)</code></pre>
+
+            <h3>📌 Shell REPL state machine pattern</h3>
+            <pre><code>class ShellExecutor:
+    def __init__(self, context: SessionContext):
+        self._context = context
+
+    def run_command(self, cmd: str) -> str:
+        # use self._context.cwd, self._context.env, self._context.encoding
+        # simulate execution ...
+        return f"Executed '{cmd}' in {self._context.cwd}"
+
+    def change_directory(self, new_path: Path) -> 'ShellExecutor':
+        new_ctx = replace(self._context, cwd=new_path)
+        return ShellExecutor(new_ctx)
+
+# usage:
+shell = ShellExecutor(SessionContext())
+shell = shell.change_directory(Path("/var/log"))</code></pre>
+        </section>
+
+        <!-- BEHAVIOR & NOTES: concurrency, frozen constraints, design rationale -->
+        <section id="behavior">
+            <h2>🧠 Behavior & Design Notes</h2>
+            <div class="method-box">
+                <strong>🔒 Immutability Guarantees:</strong> The <code>@dataclass(frozen=True)</code> decorator makes the class hashable and prevents accidental mutation. However, note that the <code>env</code> dictionary itself is a mutable container; the frozen dataclass only prevents reassigning <code>env</code> attribute. To preserve deep immutability, avoid mutating the dictionary after creation — instead always replace the entire <code>env</code> via a new instance.
+            </div>
+            <ul class="attr-list">
+                <li><span class="attr-name">✔ Thread safety:</span> Immutable contexts can be safely shared across threads without locking.</li>
+                <li><span class="attr-name">✔ Default factory semantics:</span> <code>Path.cwd()</code> is evaluated at construction, not at class definition. So each instance gets the current directory of the Python process at that moment.</li>
+                <li><span class="attr-name">✔ Serialization:</span> Because it's a dataclass, you can easily serialize to JSON or dict: <code>asdict(context)</code>.</li>
+                <li><span class="attr-name">✔ Equality & Hashing:</span> Two contexts with identical <code>cwd</code>, <code>env</code>, and <code>encoding</code> are considered equal and produce the same hash — useful for caching.</li>
+            </ul>
+            <hr>
+            <h3>📌 Advanced considerations</h3>
+            <p><strong>Environment variable fallback:</strong> While the <code>env</code> dictionary is empty by default, in a real shell you may want to pre‑populate it with <code>os.environ.copy()</code>. The design intentionally leaves this decision to the caller, making the context lightweight.</p>
+            <p><strong>Encoding validation:</strong> The <code>encoding</code> attribute is a simple string; consumers should validate against Python's <code>codecs.lookup()</code> if needed. The class does not perform runtime checks to keep overhead minimal.</p>
+            <div class="method-card">
+                <h3>🔄 Relationship with Shell Executor</h3>
+                <p><code>SessionContext</code> is meant to be used as an immutable state carrier for a shell loop or command processor. Instead of mutating global state, each command can receive the current context and optionally return a new context for the next iteration. This reduces bugs and makes history/replay possible.</p>
+            </div>
+        </section>
+
+        <!-- Additional footer: cross reference to repository/abstract note but using inline style -->
+        <section style="background: #f1f5f9; border-left: 4px solid var(--primary);">
+            <h2 style="border-bottom: none;">📖 API Reference Summary</h2>
+            <p><strong>Class:</strong> <code>SessionContext</code> (frozen dataclass)<br>
+            <strong>Module:</strong> shell.context (assumed)<br>
+            <strong>Since:</strong> core shell abstraction</p>
+            <p><span class="type-hint">@dataclass(frozen=True)</span> ensures the shell session state is predictable. For any modifications, the consumer must produce a new instance — enabling clean rollback and snapshot capabilities.</p>
+            <p style="margin-top: 1rem; font-size: 0.9rem;">See also: <code>dataclasses.replace</code> utility to create modified copies without boilerplate.</p>
+        </section>
+
+        <footer style="margin-top: 2rem; text-align: center; font-size: 0.8rem; color: #64748b; border-top: 1px solid var(--border); padding-top: 2rem;">
+            SessionContext Documentation — Generated for persistent shell state management. All specifications reflect Python dataclass behavior.
+        </footer>
+    </main>
+</body>
+</html>

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bash Class | Shell Extension Documentation</title>
+    <!-- Google Fonts for Inter & Fira Code -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">    <style>
+        /* ===== PROVIDED CSS STYLES (fully integrated) ===== */
+        /* Variables de diseño */
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --sidebar-bg: #1e293b;
+            --text-main: #334155;
+            --text-bold: #0f172a;
+            --code-color: #ef4444;
+            --code-bg: #f1f5f9;
+            --border: #e2e8f0;
+            --radius: 8px;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: white;
+            padding: 2rem 1.5rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #475569 transparent;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background-color: #475569;
+            border-radius: 10px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar h2 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #94a3b8;
+            margin-bottom: 1.5rem;
+        }
+
+        .sidebar nav a {
+            display: block;
+            color: #cbd5e1;
+            text-decoration: none;
+            padding: 0.6rem 0;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .sidebar nav a:hover { color: white; }
+        .sidebar nav a.active { color: var(--primary); font-weight: 600; }
+
+        /* Contenido Principal */
+        .main-content {
+            margin-left: 260px;
+            flex: 1;
+            padding: 3rem 4rem;
+            max-width: 1000px;
+        }
+
+        header {
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            color: var(--text-bold);
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #64748b;
+        }
+
+        /* Tarjetas y Secciones */
+        section {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--text-bold);
+            margin-top: 0;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Tablas */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        th {
+            text-align: left;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: #64748b;
+            padding: 0.75rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 1rem 0.75rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.95rem;
+        }
+
+        /* Componentes de código */
+        code {
+            font-family: 'Fira Code', 'Menlo', monospace;
+            background-color: var(--code-bg);
+            color: var(--code-color);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .method-box {
+            background: #f8fafc;
+            border-left: 4px solid var(--primary);
+            padding: 1.25rem;
+            border-radius: 0 var(--radius) var(--radius) 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; padding: 2rem; }
+        }
+
+        /* Additional method card styles (provided) */
+        .method-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            transition: transform 0.2s ease;
+        }
+
+        .method-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .method-card h3 {
+            margin: 0 0 0.5rem 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 1.1rem;
+            color: var(--primary-dark);
+        }
+
+        .method-card p {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 0.95rem;
+        }
+
+        /* abstract class indicator (reused from #repository header) */
+        .abstract-badge {
+            font-size: 0.6rem;
+            background: #64748b;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            vertical-align: middle;
+            margin-left: 12px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        /* additional custom styling for inheritance hierarchy */
+        .inheritance-tree {
+            background: var(--code-bg);
+            padding: 1rem;
+            border-radius: var(--radius);
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            color: var(--text-bold);
+            border: 1px solid var(--border);
+        }
+
+        .badge {
+            background: var(--primary);
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            display: inline-block;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        .signature {
+            background: #f1f5f9;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            border: 1px solid var(--border);
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- SIDEBAR: Navigation & documentation structure -->
+    <aside class="sidebar">
+        <h2>📘 Documentation</h2>
+        <nav>
+            <a href="#overview" class="active">Overview</a>
+            <a href="#class-definition">Class Definition</a>
+            <a href="#method-details">Method: _format_command</a>
+            <a href="#behavior">Behavior & Logic</a>
+            <a href="#inheritance">Inheritance Chain</a>
+            <a href="#usage">Usage Example</a>
+        </nav>
+        <hr style="margin: 2rem 0; border-color: #334155;">
+        <nav>
+            <a href="#api-reference">API Reference</a>
+            <a href="#notes">Implementation Notes</a>
+        </nav>
+    </aside>
+
+    <!-- MAIN CONTENT: Pure HTML documentation for Bash class -->
+    <main class="main-content">
+        <header>
+            <h1>Bash <span class="abstract-badge">SHELL EXTENSION</span></h1>
+            <div class="subtitle">
+                Custom shell implementation that overrides command formatting behavior.<br>
+                Part of a modular command execution framework.
+            </div>
+        </header>
+
+        <!-- OVERVIEW SECTION -->
+        <section id="overview">
+            <h2>📄 Overview</h2>
+            <p>
+                The <code>Bash</code> class inherits from the base <code>Shell</code> class and provides a specialized 
+                implementation for command argument formatting. Unlike traditional shell implementations that might 
+                concatenate the executable with its arguments, the <strong>Bash</strong> class delegates argument 
+                handling directly to the parent class logic, preventing any premature merging. 
+            </p>
+            <p>
+                This design ensures that the executable path and arguments remain distinct until the final execution 
+                layer, offering more flexibility and correctness in complex command building scenarios.
+            </p>
+            <div class="inheritance-tree">
+                🧬 Inheritance hierarchy: <strong>Shell</strong> (base class) → <strong>Bash</strong>
+                <div style="margin-top: 8px; font-size: 0.85rem;">
+                    ⚙️ Overrides: <code>_format_command(executable, args)</code>
+                </div>
+            </div>
+        </section>
+
+        <!-- CLASS DEFINITION SECTION -->
+        <section id="class-definition">
+            <h2>🏛️ Class Definition</h2>
+            <div class="method-box">
+                <p><strong>Class:</strong> <code style="font-size:1rem;">Bash(Shell)</code></p>
+                <p><strong>Module:</strong> shell_extensions.bash (inferred)<br>
+                <strong>Access:</strong> Public | <strong>Base Class:</strong> <code>Shell</code><br>
+                <strong>Purpose:</strong> Implements a Bash-like command formatter that avoids merging the executable with its argument list.</p>
+            </div>
+            <p>The <code>Bash</code> class does not introduce new attributes; instead, it refines the internal command formatting routine. All standard shell operations (execution, environment handling) are inherited from the parent <code>Shell</code> class, while the command assembly logic is customized via the overridden method.</p>
+        </section>
+
+        <!-- METHOD DETAILS: _format_command -->
+        <section id="method-details">
+            <h2>⚙️ Method: _format_command</h2>
+            <div class="method-card">
+                <h3>_format_command(executable: str, args: list[str]) -> list[str]</h3>
+                <p><strong>Visibility:</strong> protected (convention) | <strong>Override:</strong> Yes (overrides Shell._format_command)<br>
+                <strong>Returns:</strong> <code>list[str]</code> — The processed argument list, which is exactly the original <code>args</code> list unchanged.</p>
+            </div>
+            <div class="signature">
+                📌 Signature: <strong>def _format_command(self, executable: str, args: list[str]) -> list[str]</strong>
+            </div>
+            <p>
+                The method is responsible for formatting the command before it is executed by the shell. In the base <code>Shell</code> class,
+                this method might combine the executable path with the arguments into a single flat list. However, the <code>Bash</code>
+                class deliberately <strong>bypasses that concatenation</strong> and returns only the arguments as they were received.
+            </p>
+            <p><strong>Key behavior:</strong> The <code>executable</code> parameter is ignored. The method returns the <code>args</code> list 
+            as-is. The base <code>Shell</code> class later handles the overall command construction, ensuring that the executable is 
+            properly integrated without being merged prematurely.</p>
+            <div class="method-box">
+                💡 <strong>Design rationale:</strong> By returning only the arguments and discarding the executable concatenation, 
+                the class delegates final command assembly to the parent’s execution logic. This prevents double‑quoting errors 
+                and preserves the original argument structure, which is essential for complex command lines with flags, pipes, 
+                or redirections.
+            </div>
+        </section>
+
+        <!-- BEHAVIOR & LOGIC -->
+        <section id="behavior">
+            <h2>🧠 Behavioral Logic</h2>
+            <p>The <code>_format_command</code> method implements a clean separation of concerns:</p>
+            <table>
+                <thead>
+                    <tr><th>Aspect</th><th>Description</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Executable handling</strong></td><td>The <code>executable</code> parameter is ignored — it is not merged into the returned list.</td></tr>
+                    <tr><td><strong>Argument propagation</strong></td><td>The entire <code>args</code> list is returned without any transformation, filtering, or reordering.</td></tr>
+                    <tr><td><strong>Parent delegation</strong></td><td>Base <code>Shell</code> class is responsible for final command assembly (e.g., joining executable + formatted args).</td></tr>
+                    <tr><td><strong>Return type</strong></td><td><code>list[str]</code> — always identical to the input <code>args</code> list.</td></tr>
+                </tbody>
+            </table>
+            <p>This approach ensures that the <code>Bash</code> class does not impose any custom formatting that would alter the argument sequence. The parent's execution engine will later prepend the executable appropriately, preserving POSIX shell semantics.</p>
+        </section>
+
+        <!-- INHERITANCE CHAIN & HIERARCHY -->
+        <section id="inheritance">
+            <h2>📚 Inheritance & Base Shell Contract</h2>
+            <p>The abstract or concrete <code>Shell</code> class defines the following contract for <code>_format_command</code>:</p>
+            <div class="method-card" style="border-left-color: #64748b;">
+                <h3>Base method signature (Shell class)</h3>
+                <p><code>def _format_command(self, executable: str, args: List[str]) -> List[str]</code><br>
+                The base implementation might join <code>[executable] + args</code>. <strong>Bash</strong> overrides this to avoid merging.</p>
+            </div>
+            <p>Because the <code>Bash</code> class returns only <code>args</code>, the parent’s command execution routine will typically handle the final command vector as:<br>
+            <code>final_command = [executable] + self._format_command(executable, args)</code> → which becomes <code>[executable] + args</code>.</p>
+            <div class="inheritance-tree">
+                🔄 <strong>Flow example:</strong><br>
+                <code>Shell.execute("git", ["status", "--short"])</code><br>
+                → <code>_format_command("git", ["status","--short"])</code> returns <code>["status","--short"]</code><br>
+                → Parent command builder: <code>["git", "status", "--short"]</code> ✅ Correct.
+            </div>
+        </section>
+
+        <!-- USAGE EXAMPLE (practical demonstration) -->
+        <section id="usage">
+            <h2>💻 Usage Example (Conceptual)</h2>
+            <p>Although the full execution environment is not shown, typical usage of the <code>Bash</code> class inside a shell framework:</p>
+            <div class="signature">
+                <pre style="margin:0; font-family:'Fira Code',monospace; background:transparent;">
+<span style="color:#3b82f6;">from shell_base import Shell</span>
+<span style="color:#3b82f6;">class Bash(Shell):</span>
+    <span style="color:#64748b;">def _format_command(self, executable: str, args: list[str]) -> list[str]:</span>
+        <span style="color:#10b981;"># returns args untouched → base class handles executable separately</span>
+        <span style="color:#ef4444;">return args</span>
+
+<span style="color:#334155;"># hypothetical instantiation</span>
+bash_shell = Bash()
+<span style="color:#334155;"># internal execution call would invoke _format_command</span>
+formatted = bash_shell._format_command(<span style="color:#10b981;">"ls"</span>, [<span style="color:#10b981;">"-la"</span>, <span style="color:#10b981;">"/home"</span>])
+<span style="color:#334155;">print(formatted)   # Output: ['-la', '/home']</span>
+                </pre>
+            </div>
+            <p><strong>Note:</strong> The parent <code>Shell</code> class will combine the executable and the returned argument list, ensuring proper command execution.</p>
+        </section>
+
+        <!-- API REFERENCE TABLE -->
+        <section id="api-reference">
+            <h2>📑 API Reference</h2>
+            <table>
+                <thead>
+                    <tr><th>Method / Attribute</th><th>Parameters</th><th>Return type</th><th>Description</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>_format_command</code></td>
+                        <td><code>executable: str</code>, <code>args: list[str]</code></td>
+                        <td><code>list[str]</code></td>
+                        <td>Overrides parent to return the original <code>args</code> without merging the executable. The base <code>Shell</code> class later constructs the full command vector.</td>
+                    </tr>
+                    <tr>
+                        <td><em>Inherited methods</em><br><code>execute()</code>, <code>run()</code>, etc.</td>
+                        <td>Varies by <code>Shell</code> implementation</td>
+                        <td>Depends on parent</td>
+                        <td>All other shell behavior (process execution, environment, I/O) is inherited from <code>Shell</code> and unchanged.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- IMPLEMENTATION NOTES -->
+        <section id="notes">
+            <h2>📝 Implementation Notes & Rationale</h2>
+            <ul style="line-height: 1.6; padding-left: 1.2rem;">
+                <li><strong>No concatenation:</strong> The original code comment explicitly states: <em>"We no longer concatenate [executable] + args here."</em> This is a deliberate design shift.</li>
+                <li><strong>Delegation to parent:</strong> By returning only <code>args</code>, the parent <code>Shell</code> class can handle the executable separately, preserving flexibility for different shell dialects (e.g., sh, zsh).</li>
+                <li><strong>Why return args as-is?</strong> Prevents double-escaping issues and ensures that argument boundaries are respected. The executable is not treated as part of the argument list prematurely.</li>
+                <li><strong>Performance:</strong> The method is O(1) in terms of transformation — no copy or list mutation is performed (the same list reference is returned).</li>
+                <li><strong>Type safety:</strong> Annotations <code>executable: str</code> and <code>args: list[str]</code> improve maintainability and compatibility with static type checkers.</li>
+            </ul>
+            <div class="method-box">
+                ⚠️ <strong>Edge case behavior:</strong> If the base <code>Shell</code> class expects <code>_format_command</code> to return a list that includes the executable, the <code>Bash</code> override will cause a different command structure. Ensure the parent class correctly handles this — standard practice is that the parent adds the executable after formatting.
+            </div>
+        </section>
+
+        <!-- FOOTER / ADDITIONAL NOTES -->
+        <footer style="margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1.5rem; font-size: 0.85rem; color: #64748b;">
+            <p>Documentation generated for <strong>Bash</strong> class | Part of Shell command abstraction layer.<br>
+            Pure HTML/CSS documentation using custom design system. Code logic reflects Python's explicit command formatting override.</p>
+        </footer>
+    </main>
+</body>
+</html>

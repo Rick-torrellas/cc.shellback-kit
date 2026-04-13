@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArgumentBuilder | OS Argument Documentation</title>
+    <!-- Include Inter & Fira Code fonts for clean typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<aside class="sidebar">
+    <h2>📘 Documentation</h2>
+    <nav>
+        <a href="#overview" class="active">🏠 Overview</a>
+        <a href="#constructor">⚙️ Constructor</a>
+        <a href="#methods">🔧 Methods</a>
+        <a href="#usage">💡 Usage Example</a>
+        <a href="#api-ref">📄 API Reference</a>
+    </nav>
+</aside>
+
+<main class="main-content">
+    <header>
+        <h1>ArgumentBuilder <span class="badge">Python 3.8+</span></h1>
+        <div class="subtitle">Guarantees consistency of arguments for the Operating System — smart argument & flag builder with Unix/Windows style support.</div>
+    </header>
+
+    <!-- Overview Section -->
+    <section id="overview">
+        <h2>📖 Overview</h2>
+        <p><code>ArgumentBuilder</code> is a fluent, chainable builder class designed to construct command-line argument lists reliably. It automatically flattens nested sequences, converts values to strings, skips empty or <code>None</code> entries, and supports both Unix (<code>--flag</code>) and Windows (<code>/flag</code>) argument styles. Perfect for building subprocess calls, CLI wrappers, or any OS-level command arguments.</p>
+        <div class="method-box">
+            <strong>✨ Key Features:</strong>
+            <ul>
+                <li>✅ Flattens lists/tuples recursively</li>
+                <li>✅ Ignores <code>None</code> and empty strings</li>
+                <li>✅ Dual style: Unix (<code>--flag</code>) or Windows (<code>/flag</code>)</li>
+                <li>✅ Method chaining for elegant construction</li>
+                <li>✅ Type-safe: returns <code>List[str]</code> on build</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Constructor Section -->
+    <section id="constructor">
+        <h2>⚙️ Constructor</h2>
+        <div class="method-card">
+            <h3>__init__(style: str = "unix")</h3>
+            <p>Initializes a new <code>ArgumentBuilder</code> instance with the specified argument style.</p>
+            <ul class="param-list">
+                <li><span class="param-name">style</span> – <code>str</code>, optional. Determines flag prefix: <code>"unix"</code> → <code>--</code> (default), <code>"windows"</code> → <code>/</code>.</li>
+                <li><span class="param-name">Returns</span> – <code>ArgumentBuilder</code> instance.</li>
+            </ul>
+            <div class="example-block">
+                # Unix style (default)<br>
+                builder = ArgumentBuilder()<br>
+                # Windows style<br>
+                win_builder = ArgumentBuilder(style="windows")
+            </div>
+        </div>
+    </section>
+
+    <!-- Methods Section -->
+    <section id="methods">
+        <h2>🔧 Public Methods</h2>
+        
+        <!-- add_arg method -->
+        <div class="method-card">
+            <h3>add_arg(value: Any) -> ArgumentBuilder</h3>
+            <p>Adds an argument to the internal list. Automatically flattens <code>list</code> or <code>tuple</code> structures, converts any value to string, strips whitespace, and skips <code>None</code> or empty strings after stripping. This method is chainable.</p>
+            <ul class="param-list">
+                <li><span class="param-name">value</span> – Any type: string, number, boolean, list, tuple, etc. <code>None</code> or empty values are ignored.</li>
+                <li><span class="param-name">Returns</span> – <code>self</code> (fluent interface).</li>
+            </ul>
+            <div><strong>📝 Example:</strong></div>
+            <div class="example-block">
+                builder = ArgumentBuilder()<br>
+                builder.add_arg("ls").add_arg(["-l", "-a"]).add_arg(None).add_arg("--color")<br>
+                # Resulting args: ["ls", "-l", "-a", "--color"]
+            </div>
+        </div>
+        
+        <!-- add_flag method -->
+        <div class="method-card">
+            <h3>add_flag(name: str, value: Any = None) -> ArgumentBuilder</h3>
+            <p>Adds a flag (option) with an optional value. The flag name is automatically cleaned (trims spaces, replaces spaces with underscores). The prefix depends on the <code>style</code> parameter (<code>--</code> for Unix, <code>/</code> for Windows). If a <code>value</code> is provided, it is added as a separate argument after the flag.</p>
+            <ul class="param-list">
+                <li><span class="param-name">name</span> – Flag name (e.g., <code>"verbose"</code>, <code>"output file"</code> → normalized to <code>"output_file"</code>).</li>
+                <li><span class="param-name">value</span> – Optional value associated with the flag. If not <code>None</code>, appended as next argument.</li>
+                <li><span class="param-name">Returns</span> – <code>self</code> for chaining.</li>
+            </ul>
+            <div><strong>📝 Example:</strong></div>
+            <div class="example-block">
+                builder = ArgumentBuilder(style="unix")<br>
+                builder.add_flag("verbose").add_flag("output", "result.txt")<br>
+                # Result: ["--verbose", "--output", "result.txt"]<br><br>
+                win_builder = ArgumentBuilder(style="windows")<br>
+                win_builder.add_flag("recursive", True)<br>
+                # Result: ["/recursive", "True"]
+            </div>
+        </div>
+        
+        <!-- build method -->
+        <div class="method-card">
+            <h3>build() -> List[str]</h3>
+            <p>Finalizes the argument building process and returns the constructed list of string arguments. This method does not alter the builder state; you can continue adding arguments after calling <code>build()</code>.</p>
+            <ul class="param-list">
+                <li><span class="param-name">Returns</span> – <code>List[str]</code> containing all accumulated, sanitized arguments.</li>
+            </ul>
+            <div class="example-block">
+                args = ArgumentBuilder().add_arg("echo").add_flag("message", "hello").build()<br>
+                print(args)  # ['echo', '--message', 'hello']
+            </div>
+        </div>
+    </section>
+
+    <!-- Usage Example Section with realistic scenario -->
+    <section id="usage">
+        <h2>💡 Practical Usage Example</h2>
+        <p>Below is a complete example demonstrating how <code>ArgumentBuilder</code> can be used to construct complex command-line invocations for different operating systems while handling nested data structures gracefully.</p>
+        <div class="example-block">
+            from typing import List<br>
+            import subprocess<br><br>
+            # Build arguments for a 'find' command (Unix style)<br>
+            builder = ArgumentBuilder(style="unix")<br>
+            builder.add_arg("find") \<br>
+                   .add_arg("/home/user") \<br>
+                   .add_flag("type", "f") \<br>
+                   .add_flag("name", "*.py") \<br>
+                   .add_arg(["-exec", "grep", "-l", "TODO", "{}", ";"])<br><br>
+            cmd: List[str] = builder.build()<br>
+            print("Generated command:", cmd)<br>
+            # Output: ['find', '/home/user', '--type', 'f', '--name', '*.py', '-exec', 'grep', '-l', 'TODO', '{}', ';']<br><br>
+            # Windows style with flags<br>
+            win_builder = ArgumentBuilder(style="windows")<br>
+            win_builder.add_arg("dir") \<br>
+                       .add_flag("sort", "name") \<br>
+                       .add_flag("reverse")<br>
+            print(win_builder.build())  # ['dir', '/sort', 'name', '/reverse']
+        </div>
+        <p style="margin-top: 1rem;">🔍 The builder intelligently handles nested sequences and automatically strips empty strings, making it robust for dynamic argument generation.</p>
+    </section>
+
+    <!-- API Reference Table -->
+    <section id="api-ref">
+        <h2>📄 API Reference & Behavior</h2>
+        <table>
+            <thead>
+                <tr><th>Method</th><th>Parameters</th><th>Description</th><th>Return</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>__init__</code></td><td><code>style: str = "unix"</code></td><td>Constructor. Style 'unix' => '--flag', 'windows' => '/flag'.</td><td><code>ArgumentBuilder</code></td></tr>
+                <tr><td><code>add_arg</code></td><td><code>value: Any</code></td><td>Adds argument flattening iterables, converting to string, ignoring None/empty.</td><td><code>self</code></td></tr>
+                <tr><td><code>add_flag</code></td><td><code>name: str, value: Any = None</code></td><td>Adds a flag with optional value. Normalizes name (spaces→underscores).</td><td><code>self</code></td></tr>
+                <tr><td><code>build</code></td><td>None</td><td>Returns the built argument list as <code>List[str]</code>.</td><td><code>List[str]</code></td></tr>
+            </tbody>
+        </table>
+        
+        <h3 style="margin-top: 1.5rem;">🧠 Internal Logic Notes</h3>
+        <ul>
+            <li><strong>Flattening:</strong> <code>add_arg</code> recursively expands <code>list</code> or <code>tuple</code> instances. Each element is processed individually.</li>
+            <li><strong>Empty & None Handling:</strong> If a value is <code>None</code> or becomes an empty string after <code>strip()</code>, it is silently discarded.</li>
+            <li><strong>Flag Normalization:</strong> The flag name is stripped of leading/trailing whitespace, and any internal spaces are replaced with underscores (e.g., <code>"output file"</code> → <code>"output_file"</code>).</li>
+            <li><strong>Style Prefix:</strong> For Unix style, prefix <code>--</code> is added. For Windows style, <code>/</code> is added. No prefix modification for regular arguments added via <code>add_arg</code>.</li>
+            <li><strong>Chainable Design:</strong> All methods except <code>build()</code> return the instance, enabling method chaining for concise code.</li>
+        </ul>
+    </section>
+
+    <!-- Additional Example: Edge Cases -->
+    <section>
+        <h2>🔍 Edge Cases & Advanced Behavior</h2>
+        <div class="method-card">
+            <h3>Handling nested structures & mixed types</h3>
+            <div class="example-block">
+                builder = ArgumentBuilder()<br>
+                builder.add_arg(["git", "commit", ["-m", "Initial commit"]])<br>
+                builder.add_flag("amend").add_arg(None).add_flag("no-verify")<br>
+                print(builder.build())<br>
+                # Output: ['git', 'commit', '-m', 'Initial commit', '--amend', '--no-verify']
+            </div>
+            <p style="margin-top: 0.75rem;">⚠️ <strong>Note:</strong> Passing a boolean value like <code>True</code> or <code>False</code> will be stringified (<code>"True"</code> / <code>"False"</code>). If you need special handling, convert manually before adding.</p>
+        </div>
+        <div class="method-card">
+            <h3>Windows style with numeric values</h3>
+            <div class="example-block">
+                win = ArgumentBuilder(style="windows")<br>
+                win.add_arg("ping").add_flag("n", 5).add_arg("127.0.0.1")<br>
+                print(win.build())  # ['ping', '/n', '5', '127.0.0.1']
+            </div>
+        </div>
+    </section>
+    
+    <footer>
+        <p>ArgumentBuilder — Consistent OS argument generation. Fluent, robust, and cross-platform ready. <br>Built for Python developers who need reliable CLI argument assembly.</p>
+        <p style="margin-top: 0.5rem;">📌 Source code conforms to Python typing & PEP 8. <code>List</code> imported from typing.</p>
+    </footer>
+</main>
+
+<!-- Smooth scroll behavior for anchor links -->
+<script>
+    document.querySelectorAll('.sidebar nav a, .main-content a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            const targetId = this.getAttribute('href');
+            if (targetId && targetId !== '#') {
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    e.preventDefault();
+                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    // Update active class in sidebar
+                    document.querySelectorAll('.sidebar nav a').forEach(link => link.classList.remove('active'));
+                    const correspondingSidebarLink = document.querySelector(`.sidebar nav a[href="${targetId}"]`);
+                    if (correspondingSidebarLink) correspondingSidebarLink.classList.add('active');
+                }
+            }
+        });
+    });
+    // set active based on scroll (optional simple highlight)
+    window.addEventListener('scroll', () => {
+        let current = '';
+        const sections = document.querySelectorAll('section, header');
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop - 100;
+            if (pageYOffset >= sectionTop) {
+                current = section.getAttribute('id');
+            }
+        });
+        if (current) {
+            document.querySelectorAll('.sidebar nav a').forEach(link => {
+                link.classList.remove('active');
+                const href = link.getAttribute('href').substring(1);
+                if (href === current) link.classList.add('active');
+            });
+        }
+    });
+</script>
+</body>
+</html>

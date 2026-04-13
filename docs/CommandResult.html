@@ -1,0 +1,452 @@
+Here is an HTML documentation page for your `CommandResult` class, using the CSS styles you provided.
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CommandResult | API Documentation</title>
+    <style>
+        /* ===== GLOBAL STYLES & VARIABLES ===== */
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --sidebar-bg: #1e293b;
+            --text-main: #334155;
+            --text-bold: #0f172a;
+            --code-color: #ef4444;
+            --code-bg: #f1f5f9;
+            --border: #e2e8f0;
+            --radius: 8px;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: white;
+            padding: 2rem 1.5rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #475569 transparent;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background-color: #475569;
+            border-radius: 10px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar h2 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #94a3b8;
+            margin-bottom: 1.5rem;
+        }
+
+        .sidebar nav a {
+            display: block;
+            color: #cbd5e1;
+            text-decoration: none;
+            padding: 0.6rem 0;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .sidebar nav a:hover { color: white; }
+        .sidebar nav a.active { color: var(--primary); font-weight: 600; }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            flex: 1;
+            padding: 3rem 4rem;
+            max-width: 1000px;
+        }
+
+        header {
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            color: var(--text-bold);
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #64748b;
+        }
+
+        /* Cards & Sections */
+        section {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--text-bold);
+            margin-top: 0;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        th {
+            text-align: left;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: #64748b;
+            padding: 0.75rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 1rem 0.75rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.95rem;
+        }
+
+        /* Code components */
+        code {
+            font-family: 'Fira Code', 'Menlo', monospace;
+            background-color: var(--code-bg);
+            color: var(--code-color);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        pre {
+            background: #1e293b;
+            padding: 1rem;
+            border-radius: var(--radius);
+            overflow-x: auto;
+            color: #e2e8f0;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            margin: 1rem 0;
+        }
+
+        pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        .method-box {
+            background: #f8fafc;
+            border-left: 4px solid var(--primary);
+            padding: 1.25rem;
+            border-radius: 0 var(--radius) var(--radius) 0;
+            margin: 1rem 0;
+        }
+
+        .method-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            transition: transform 0.2s ease;
+        }
+
+        .method-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .method-card h3 {
+            margin: 0 0 0.5rem 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 1.1rem;
+            color: var(--primary-dark);
+        }
+
+        .method-card p {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 0.95rem;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #e2e8f0;
+            color: #1e293b;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-left: 0.75rem;
+            vertical-align: middle;
+        }
+
+        .attribute-table td:first-child {
+            font-family: 'Fira Code', monospace;
+            font-weight: 600;
+            color: var(--text-bold);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; padding: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="sidebar">
+        <h2>📘 Documentation</h2>
+        <nav>
+            <a href="#overview" class="active">Overview</a>
+            <a href="#attributes">Attributes</a>
+            <a href="#methods">Methods</a>
+            <a href="#usage">Usage Example</a>
+            <a href="#magic-methods">Magic Methods</a>
+        </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <header>
+            <h1>CommandResult <span class="badge">dataclass</span></h1>
+            <p class="subtitle">Encapsulates the complete output, metadata, and execution context of a system command.</p>
+        </header>
+
+        <!-- OVERVIEW SECTION -->
+        <section id="overview">
+            <h2>📖 Class Overview</h2>
+            <p><code>CommandResult</code> is a robust container that stores every aspect of a command execution lifecycle: 
+            standard output, error streams, exit code, execution duration, and the original command arguments. 
+            It provides intuitive methods to check success, parse JSON responses, and even supports pipe operators.</p>
+            <div class="method-box">
+                <strong>✨ Key Features:</strong>
+                <ul style="margin-top: 0.5rem; padding-left: 1.2rem;">
+                    <li>Immutable-like fields for reliable state tracking</li>
+                    <li><code>is_success()</code> → quick status validation</li>
+                    <li><code>json()</code> → automatic JSON deserialization from stdout</li>
+                    <li><code>__or__</code> → native pipe support (<code>|</code> operator)</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ATTRIBUTES SECTION (FIELDS) -->
+        <section id="attributes">
+            <h2>📋 Class Attributes</h2>
+            <table class="attribute-table">
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>standard_output</code></td>
+                        <td><code>str</code></td>
+                        <td>Captured output from the command's <strong>stdout</strong> stream. Default: <code>""</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>standard_error</code></td>
+                        <td><code>str</code></td>
+                        <td>Captured error messages from the command's <strong>stderr</strong> stream. Default: <code>""</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>return_code</code></td>
+                        <td><code>int</code></td>
+                        <td>The exit status code (<strong>0</strong> usually indicates success). Default: <code>0</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>execution_time</code></td>
+                        <td><code>float</code></td>
+                        <td>Total duration of the command execution in <strong>seconds</strong>. Default: <code>0.0</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>command_sent</code></td>
+                        <td><code>list[str]</code></td>
+                        <td>The original command arguments sent for execution. Default: empty list <code>[]</code></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="method-box">
+                💡 <strong>Note:</strong> All attributes are initialized with sensible defaults. In practice, an executor fills them after running a process.
+            </div>
+        </section>
+
+        <!-- METHODS SECTION -->
+        <section id="methods">
+            <h2>⚙️ Public Methods</h2>
+            
+            <div class="method-card">
+                <h3>is_success() → bool</h3>
+                <p>Returns <code>True</code> if the command executed successfully. The success condition is determined by the return code being exactly <strong>0</strong>.</p>
+                <div style="margin-top: 0.5rem;">
+                    <code>result.is_success()  # True if return_code == 0</code>
+                </div>
+            </div>
+
+            <div class="method-card">
+                <h3>json() → Any</h3>
+                <p>Parses the <code>standard_output</code> string as JSON and returns a Python object (dictionary, list, or primitive). Raises <code>json.JSONDecodeError</code> if the output is not valid JSON.</p>
+                <div style="margin-top: 0.5rem;">
+                    <code>data = result.json()  # automatically loads from stdout</code>
+                </div>
+            </div>
+        </section>
+
+        <!-- MAGIC METHODS / PIPE OPERATOR -->
+        <section id="magic-methods">
+            <h2>🔗 Special Methods (Operator Overload)</h2>
+            <div class="method-card">
+                <h3>__or__(self, next_command: Any) → str</h3>
+                <p>Enables the pipe syntax (<code>|</code> operator). When used, it returns the raw <code>standard_output</code> string, allowing seamless chaining or forwarding to another process or function.</p>
+                <pre><code># Example: pipe result's output to another handler
+output = command_result | some_processor  # returns self.standard_output</code></pre>
+                <p><strong>Use case:</strong> Simulate shell-like piping between command results or simply extract stdout elegantly.</p>
+            </div>
+        </section>
+
+        <!-- USAGE EXAMPLE (PRACTICAL DEMO) -->
+        <section id="usage">
+            <h2>🚀 Usage Example</h2>
+            <p>Below is a practical demonstration of how <code>CommandResult</code> behaves after executing a command (simulated).</p>
+            <pre><code>from dataclasses import dataclass, field
+import json
+from typing import Any
+
+# (Assuming CommandResult class is defined as above)
+# Simulated instance:
+cmd_result = CommandResult(
+    standard_output='{"status": "ok", "data": [1,2,3]}',
+    standard_error="",
+    return_code=0,
+    execution_time=0.234,
+    command_sent=["curl", "https://api.example.com"]
+)
+
+# 1. Check success
+if cmd_result.is_success():
+    print("✅ Command succeeded")
+
+# 2. Parse JSON response
+parsed = cmd_result.json()
+print(parsed["data"])  # [1,2,3]
+
+# 3. Pipe operator usage (returns stdout string)
+output_text = cmd_result | None   # returns standard_output
+print(output_text)  # {"status": "ok", ...}
+
+# 4. Access metadata
+print(f"Duration: {cmd_result.execution_time}s, Cmd: {cmd_result.command_sent}")</code></pre>
+
+            <div class="method-box" style="margin-top: 1rem;">
+                🔍 <strong>Expected output:</strong><br/>
+                ✅ Command succeeded<br/>
+                [1, 2, 3]<br/>
+                {"status": "ok", "data": [1,2,3]}<br/>
+                Duration: 0.234s, Cmd: ['curl', 'https://api.example.com']
+            </div>
+        </section>
+
+        <!-- ADDITIONAL NOTES: FIELD DEFAULTS + DATACLASS BEHAVIOR -->
+        <section id="notes">
+            <h2>📌 Implementation Notes</h2>
+            <ul>
+                <li>The class uses <code>field(default_factory=list)</code> for <code>command_sent</code> to avoid mutable default issues — each instance gets a fresh list.</li>
+                <li><code>execution_time</code> is measured in seconds (float), suitable for high-resolution timing.</li>
+                <li>The <code>json()</code> method directly calls <code>json.loads()</code> on <code>standard_output</code>. Ensure the output contains valid JSON to avoid exceptions.</li>
+                <li><code>__or__</code> returns the raw string, making it easy to integrate with functions expecting text input.</li>
+            </ul>
+        </section>
+
+        <!-- FOOTER (implicit) -->
+        <footer style="margin-top: 2rem; font-size: 0.8rem; color: #94a3b8; text-align: center; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+            CommandResult API Documentation — Pure Python dataclass for command execution tracing.
+        </footer>
+    </main>
+
+    <!-- Smooth scroll & active link highlight (simple vanilla) -->
+    <script>
+        (function() {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.sidebar nav a');
+            
+            function setActiveLink() {
+                let current = '';
+                const scrollPos = window.scrollY + 120;
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionBottom = sectionTop + section.offsetHeight;
+                    if (scrollPos >= sectionTop && scrollPos < sectionBottom) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    const href = link.getAttribute('href').substring(1);
+                    if (href === current) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+            
+            window.addEventListener('scroll', setActiveLink);
+            window.addEventListener('load', setActiveLink);
+            
+            // Smooth scroll for anchor clicks
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({ behavior: 'smooth' });
+                        history.pushState(null, null, `#${targetId}`);
+                    }
+                });
+            });
+        })();
+    </script>
+</body>
+</html>
+```

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>CommandNotFoundError | API Reference</title>
+    <!-- Google Fonts for modern typography (Inter & Fira Code) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- SIDEBAR: navigation with quick links -->
+    <aside class="sidebar">
+        <h2>DOCUMENTATION</h2>
+        <nav>
+            <a href="#overview" class="active">Overview</a>
+            <a href="#class-definition">Class Definition</a>
+            <a href="#usage">Usage Example</a>
+            <a href="#attributes">Attributes & Methods</a>
+            <a href="#inheritance">Inheritance Hierarchy</a>
+            <a href="#best-practices">Best Practices</a>
+        </nav>
+        <div style="margin-top: 2rem;">
+            <h2>MODULE</h2>
+            <nav>
+                <a href="#exception-info">exception</a>
+                <a href="#command-utils">command_utils</a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT: Documentation for CommandNotFoundError -->
+    <main class="main-content">
+        <header class="exception-header">
+            <h1>CommandNotFoundError <span style="font-size: 1rem; font-weight: 400; color: #475569;">· custom exception</span></h1>
+            <div class="subtitle">
+                Raised when a required binary or executable does not exist in the system PATH environment.
+            </div>
+        </header>
+
+        <!-- OVERVIEW SECTION -->
+        <section id="overview">
+            <h2>📖 Overview</h2>
+            <p><code>CommandNotFoundError</code> is a Python custom exception class derived from the built-in <code>Exception</code> class. It is designed to signal that an external command or binary could not be located in the directories listed in the <strong>PATH</strong> environment variable. This provides a clear, semantic error for command-line tools, subprocess invocations, or any scenario where binary presence is required.</p>
+            <div class="method-box" style="margin-top: 1rem;">
+                <strong>✨ Typical use case:</strong> When building CLI wrappers, automation scripts, or dev tools, you can raise <code>CommandNotFoundError</code> to indicate that a mandatory executable (e.g., <code>ffmpeg</code>, <code>docker</code>, <code>git</code>) is missing, allowing graceful error handling and user feedback.
+            </div>
+        </section>
+
+        <!-- CLASS DEFINITION SECTION (signature + docstring) -->
+        <section id="class-definition">
+            <h2>🔧 Class Definition</h2>
+            <div class="signature">
+                <span style="color: #2563eb; font-weight: 600;">class</span> CommandNotFoundError(<span style="color: #b91c1c;">Exception</span>):
+                <span style="display: block; margin-top: 6px; color: #475569;">"""Raised when the binary does not exist in the PATH."""</span>
+                <span style="display: block; margin-top: 8px; color: #64748b;">&nbsp;&nbsp;&nbsp;&nbsp;pass</span>
+            </div>
+            <p>The exception is deliberately minimal, inheriting all standard exception behavior. The docstring clearly states the purpose: <em>“Raised when the binary does not exist in the PATH.”</em> Because no additional attributes are defined, instances behave like a standard exception but with a distinct type for precise <code>except</code> blocks.</p>
+            <table style="margin-top: 1.25rem;">
+                <thead>
+                    <tr><th>Property</th><th>Value</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Base class</td><td><code>Exception</code></td></tr>
+                    <tr><td>Module</td><td>user-defined (typically placed in <code>exceptions.py</code> or command utilities module)</td></tr>
+                    <tr><td>String representation</td><td>Default <code>Exception</code> representation unless custom <code>__str__</code> is added.</td></tr>
+                    <tr><td>Python version compatibility</td><td>Python 3.x+</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- USAGE EXAMPLE: practical code snippet -->
+        <section id="usage">
+            <h2>💻 Usage Example</h2>
+            <p>Below is a complete example showing how <code>CommandNotFoundError</code> can be raised and caught in a function that checks for binary availability.</p>
+            <div class="signature" style="background: #0f172a; color: #e2e8f0; overflow-x: auto;">
+<pre style="margin: 0; font-family: 'Fira Code', monospace; font-size: 0.85rem;">
+from shutil import which
+from typing import NoReturn
+
+class CommandNotFoundError(Exception):
+    """Raised when the binary does not exist in the PATH."""
+    pass
+
+def require_command(name: str) -> str:
+    """Return command path or raise CommandNotFoundError."""
+    cmd_path = which(name)
+    if cmd_path is None:
+        raise CommandNotFoundError(f"Command '{name}' not found in PATH.")
+    return cmd_path
+
+# Example usage
+try:
+    path = require_command("ffmpeg")
+    print(f"✅ Found ffmpeg at: {path}")
+except CommandNotFoundError as e:
+    print(f"❌ Execution failed: {e}")
+</pre>
+            </div>
+            <p>When the binary is missing, the custom exception propagates a meaningful error that calling code can handle elegantly.</p>
+        </section>
+
+        <!-- ATTRIBUTES & METHODS: even though the class has no custom methods, we present default exception behavior -->
+        <section id="attributes">
+            <h2>📦 Attributes & Methods</h2>
+            <p>The <code>CommandNotFoundError</code> class does not define its own constructor or attributes, therefore it inherits all standard methods from the built-in <code>Exception</code> class. The key features are summarized below.</p>
+            
+            <div class="method-card">
+                <h3>__init__(self, *args)</h3>
+                <p>Constructor inherited from <code>Exception</code>. You can pass an optional error message as an argument (e.g., <code>CommandNotFoundError("git is missing")</code>). The message is stored in the <code>args</code> attribute.</p>
+            </div>
+            <div class="method-card">
+                <h3>__str__(self)</h3>
+                <p>Returns the string representation of the exception — typically the error message provided during instantiation. If no arguments are given, returns an empty string or the default representation.</p>
+            </div>
+            <div class="method-card">
+                <h3>args</h3>
+                <p>Tuple of arguments passed to the exception constructor. Useful for retrieving error details in exception handlers.</p>
+            </div>
+            <div class="method-card">
+                <h3>with_traceback(tb)</h3>
+                <p>Standard method to attach or replace the traceback; commonly used when raising from an exception context.</p>
+            </div>
+            <p>Because the class is minimal, it’s lightweight and ideal for domain-specific error signaling without overhead.</p>
+        </section>
+
+        <!-- INHERITANCE HIERARCHY: tree view -->
+        <section id="inheritance">
+            <h2>🌳 Inheritance Hierarchy</h2>
+            <div class="method-box" style="background: #ffffff; border-left-color: #3b82f6;">
+                <div style="font-family: 'Fira Code', monospace; line-height: 1.8;">
+                    <span style="color: #1e293b;">BaseException</span><br>
+                    &nbsp;&nbsp;└── <span style="color: #1e293b;">Exception</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── <strong style="color: #2563eb;">CommandNotFoundError</strong> &nbsp;<span class="badge">custom</span>
+                </div>
+                <p style="margin-top: 1rem; margin-bottom: 0;">This hierarchy means that <code>except Exception</code> will also catch <code>CommandNotFoundError</code>. For precise handling, always catch the specific exception before general ones.</p>
+            </div>
+            <table style="margin-top: 1rem;">
+                <thead>
+                    <tr><th>Class</th><th>Description</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>BaseException</code></td><td>Base class for all built-in exceptions (includes <code>SystemExit</code>, <code>KeyboardInterrupt</code>).</td></tr>
+                    <tr><td><code>Exception</code></td><td>Base class for all non-exit exceptions. User-defined exceptions should typically derive from <code>Exception</code>.</td></tr>
+                    <tr><td><code>CommandNotFoundError</code></td><td>Concrete exception indicating a missing binary in PATH.</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- BEST PRACTICES: how to extend or use effectively -->
+        <section id="best-practices">
+            <h2>✅ Best Practices & Recommendations</h2>
+            <ul style="margin: 0; padding-left: 1.3rem; line-height: 1.5;">
+                <li><strong>Provide contextual messages:</strong> When raising <code>CommandNotFoundError</code>, include the command name in the error message to help debugging.</li>
+                <li><strong>Combine with <code>shutil.which</code>:</strong> Use Python's <code>shutil.which()</code> to check binary existence before raising the exception.</li>
+                <li><strong>Keep exception hierarchy clean:</strong> If you have multiple command-related errors, consider creating a base <code>CommandError</code> and subclass it, but <code>CommandNotFoundError</code> works perfectly standalone.</li>
+                <li><strong>Document raised exceptions:</strong> In your function docstrings, explicitly mention that <code>CommandNotFoundError</code> may be raised to improve API transparency.</li>
+                <li><strong>Testing tip:</strong> Simulate missing binaries by temporarily modifying PATH in unit tests, and assert that <code>CommandNotFoundError</code> is raised correctly.</li>
+            </ul>
+            <div style="background: #fef9e3; border-left: 4px solid #f59e0b; padding: 1rem; border-radius: 6px; margin-top: 1.25rem;">
+                <strong>📌 Note:</strong> While this exception class contains only a docstring and <code>pass</code>, you can later extend it with additional attributes (e.g., <code>self.command_name</code>) without breaking existing code.
+            </div>
+        </section>
+
+        <!-- ADDITIONAL TABLE: error handling scenarios -->
+        <section>
+            <h2>⚙️ Common Scenarios & Handling</h2>
+            <table>
+                <thead>
+                    <tr><th>Situation</th><th>Recommended Handling</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Running a subprocess where tool might be missing</td>
+                        <td>Catch <code>CommandNotFoundError</code> and present a friendly error message suggesting installation steps.</td>
+                    </tr>
+                    <tr>
+                        <td>CLI application with dependency checks</td>
+                        <td>During startup, validate core binaries and raise <code>CommandNotFoundError</code> to halt gracefully.</td>
+                    </tr>
+                    <tr>
+                        <td>Cross-platform scripts (Windows, Linux, macOS)</td>
+                        <td>The exception is platform-agnostic; use <code>os.environ['PATH']</code> and <code>which()</code> to maintain portability.</td>
+                    </tr>
+                    <tr>
+                        <td>Wrap third-party call errors</td>
+                        <td>Convert generic <code>FileNotFoundError</code> or <code>subprocess.CalledProcessError</code> into <code>CommandNotFoundError</code> for consistency.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- code summary: quick reference card -->
+        <section style="background: linear-gradient(145deg, #ffffff 0%, #fafcff 100%);">
+            <h2>📄 Quick Reference</h2>
+            <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between;">
+                <div style="flex: 1; min-width: 180px;">
+                    <div class="badge" style="background: #e0f2fe;">exception name</div>
+                    <p style="margin-top: 0.5rem;"><code>CommandNotFoundError</code></p>
+                </div>
+                <div style="flex: 1;">
+                    <div class="badge" style="background: #e0f2fe;">raise syntax</div>
+                    <p style="margin-top: 0.5rem;"><code>raise CommandNotFoundError("msg")</code></p>
+                </div>
+                <div style="flex: 1;">
+                    <div class="badge" style="background: #e0f2fe;">catch pattern</div>
+                    <p style="margin-top: 0.5rem;"><code>except CommandNotFoundError as e:</code></p>
+                </div>
+            </div>
+            <hr style="margin: 1rem 0; border-color: var(--border);">
+            <div>
+                <strong>Original code definition:</strong>
+                <div style="background: #f1f5f9; border-radius: 8px; padding: 1rem; margin-top: 0.5rem;">
+                    <code style="background: none; color: #b91c1c; display: block;">
+class CommandNotFoundError(Exception):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"""Raised when the binary does not exist in the PATH."""<br>
+&nbsp;&nbsp;&nbsp;&nbsp;pass
+                    </code>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <span>CommandNotFoundError — custom exception documentation | Built with pure HTML/CSS | Python 3.x ready</span><br>
+            <span style="font-size: 0.7rem;">Exception design follows Python best practices. Use responsibly in production tools.</span>
+        </footer>
+    </main>
+
+    <!-- Optional smooth scrolling for anchor links (no JS required, but improves behavior) -->
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+        .signature pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        @media (max-width: 768px) {
+            .signature pre {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</body>
+</html>
