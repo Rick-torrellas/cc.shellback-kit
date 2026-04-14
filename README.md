@@ -1,12 +1,15 @@
 # cc-shellback-kit
 
+💊⚛️
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Version](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/Rick-torrellas/cc-shellback-kit/badges/version.json)
 [![CI CD](https://github.com/Rick-torrellas/cc-shellback-kit/actions/workflows/main.yaml/badge.svg)](https://github.com/Rick-torrellas/cc-shellback-kit/actions/workflows/main.yaml)
 [![Python Version](https://img.shields.io/badge/python-3.11+-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![Download](https://img.shields.io/github/v/release/Rick-torrellas/cc-shellback-kit?label=Download&color=orange)](https://github.com/Rick-torrellas/cc-shellback-kit/releases)
-[![Ask DeepWiki](https://img.shields.io/badge/DeepWiki-Documentation-blue?logo=gitbook&logoColor=white)](https://deepwiki.com/Rick-torrellas/cc-shellback-kit)
 [![docs](https://img.shields.io/badge/docs-read_now-blue?style=flat-square)](https://rick-torrellas.github.io/cc-shellback-kit/)
+[![Ask DeepWiki](https://img.shields.io/badge/DeepWiki-Documentation-blue?logo=gitbook&logoColor=white)](https://deepwiki.com/Rick-torrellas/cc-shellback-kit)
+
 
 Shellback is a robust, architecturally-agnostic Python library designed to bridge terminal environments (Bash, CMD, PowerShell) with Python scripts. It provides a clean, decoupled abstraction layer to execute system commands while maintaining persistent session state and cross-platform compatibility.
 
