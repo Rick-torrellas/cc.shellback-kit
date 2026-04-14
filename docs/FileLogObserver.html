@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FileLogObserver | Shell Activity Logger Documentation</title>
+    <!-- Google Fonts for clean typography (Inter + Fira Code) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>📄 Documentation</h2>
+    <nav>
+        <a href="#overview" class="active">Overview</a>
+        <a href="#class-design">Class Design</a>
+        <a href="#constructor">Constructor</a>
+        <a href="#methods">Event Methods</a>
+        <a href="#usage-example">Usage Example</a>
+        <a href="#log-format">Log Format</a>
+    </nav>
+</div>
+
+<div class="main-content">
+    <header>
+        <h1>FileLogObserver <span class="class-badge">extends ShellObserver</span></h1>
+        <div class="subtitle">Persistent shell activity logger — captures commands, results, sessions & errors to a physical file.</div>
+    </header>
+
+    <!-- Overview Section -->
+    <section id="overview">
+        <h2>📌 Overview</h2>
+        <p><code>FileLogObserver</code> is a concrete implementation of <code>ShellObserver</code> designed to record every aspect of a shell session lifecycle. It writes structured log entries to a file using Python's <code>logging</code> module with UTF-8 encoding, timestamps, severity levels, and detailed execution metrics. Ideal for audit trails, debugging automation scripts, or monitoring remote command execution.</p>
+        <div class="method-box">
+            <strong>🔍 Key features:</strong>
+            <ul style="margin-top: 8px;">
+                <li>Automatic session start/end tracking with error differentiation</li>
+                <li>Command logging (exact executable + arguments)</li>
+                <li>Execution results: return code, duration, stdout snippet</li>
+                <li>Exception capture and system error logging</li>
+                <li>Configurable log file path (default: <code>shell_activity.log</code>)</li>
+                <li>Isolated logger with no console propagation to avoid clutter</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Class Hierarchy & Inheritance -->
+    <section id="class-design">
+        <h2>🏛️ Class Hierarchy & Design</h2>
+        <p><strong>Inheritance:</strong> <code>FileLogObserver</code> → <code>ShellObserver</code> (abstract/base observer). The observer pattern allows reacting to shell events without modifying core execution logic.</p>
+        <table>
+            <thead>
+                <tr><th>Observer Method</th><th>Triggered when...</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>on_session_start(shell_name)</code></td><td>A new shell session begins</td></tr>
+                <tr><td><code>on_session_end(shell_name, error)</code></td><td>Session ends (normally or with exception)</td></tr>
+                <tr><td><code>on_command_start(executable, final_args)</code></td><td>Just before a command is executed</td></tr>
+                <tr><td><code>on_command_result(result: CommandResult)</code></td><td>After command finishes, provides result object</td></tr>
+                <tr><td><code>on_error(message, error)</code></td><td>When an internal system-level error occurs</td></tr>
+            </tbody>
+        </table>
+        <p><strong>Internal Logger:</strong> Uses Python's <code>logging.getLogger("ShellFileLogger")</code> with a dedicated <code>FileHandler</code>. Propagate is set to <code>False</code> to prevent duplicate logs to root console handlers.</p>
+    </section>
+
+    <!-- Constructor details -->
+    <section id="constructor">
+        <h2>⚙️ Constructor (<code>__init__</code>)</h2>
+        <div class="method-card">
+            <h3>FileLogObserver(log_path: str = "shell_activity.log")</h3>
+            <p>Initializes the file-based observer. Creates a log file at the given path, configures a UTF-8 file handler with formatter <code>"%(asctime)s | %(levelname)s | %(message)s"</code>, and ensures no existing handlers remain to avoid duplicate logging.</p>
+            <p><strong>Parameters:</strong></p>
+            <ul>
+                <li><code>log_path</code> (<em>str</em>) – Path where the log file will be stored. Defaults to <code>"shell_activity.log"</code>.</li>
+            </ul>
+            <p><strong>Behavior:</strong> Clears any previous handlers attached to the internal logger, then attaches a new <code>FileHandler</code> with UTF-8 encoding. The logger level is set to <code>INFO</code> (errors also captured).</p>
+        </div>
+    </section>
+
+    <!-- All Event Methods (on_*) -->
+    <section id="methods">
+        <h2>📡 Event Handlers (Observer Methods)</h2>
+        
+        <div class="method-card">
+            <h3>on_session_start(shell_name: str)</h3>
+            <p>Logs the beginning of a shell session. Entry format: <code>=== SESSION START: {shell_name} ===</code> at INFO level.</p>
+        </div>
+
+        <div class="method-card">
+            <h3>on_session_end(shell_name: str, error: Exception = None)</h3>
+            <p>Records session termination. If <code>error</code> is provided, logs an ERROR line: <code>=== SESSION ENDED WITH ERROR: {error} ===</code>. Otherwise logs a success message at INFO level.</p>
+        </div>
+
+        <div class="method-card">
+            <h3>on_command_start(executable: str, final_args: list[str])</h3>
+            <p>Captures the exact command string built from the executable and argument list. Logs: <code>EXECUTING: {cmd_str}</code> (INFO). Useful to see raw command before execution.</p>
+        </div>
+
+        <div class="method-card">
+            <h3>on_command_result(result: CommandResult)</h3>
+            <p>Processes command outcome. Extracts return code, execution time, and a truncated snippet (first 100 chars) of stdout. Status: <code>SUCCESS</code> if <code>result.is_success()</code> else <code>FAILED(return_code)</code>. Example output: <code>RESULT: SUCCESS | DURATION: 0.0234s | STDOUT: Hello world...</code>.</p>
+        </div>
+
+        <div class="method-card">
+            <h3>on_error(message: str, error: Exception = None)</h3>
+            <p>Logs system-level failures using <code>logger.error</code>. Format: <code>SYSTEM ERROR: {message} | Detail: {error}</code>. Catches unexpected issues inside the shell controller.</p>
+        </div>
+    </section>
+
+    <!-- Usage Example (Python) -->
+    <section id="usage-example">
+        <h2>💻 Usage Example (Python integration)</h2>
+        <pre><code>from shell_observer import ShellObserver, CommandResult  # hypothetical base
+from pathlib import Path
+from your_module import FileLogObserver
+
+# Create observer with custom log path
+observer = FileLogObserver(log_path="./logs/audit.log")
+
+# Attach observer to a Shell instance (pseudo code)
+shell = YourShellImplementation()
+shell.attach(observer)
+
+# Start session
+shell.start_session("remote_bash")
+
+# Execute commands (triggers on_command_start + on_command_result)
+shell.execute("ls -la /var/log")
+shell.execute("python3 --version")
+
+# End session normally
+shell.end_session()
+
+# If error occurs: observer.on_session_end(..., error=Exception("network down"))
+print("Log written to:", observer.log_path)</code></pre>
+        <div class="method-box">
+            💡 <strong>Tip:</strong> The observer automatically flushes logs to disk after each event (default file handler behavior). Use absolute paths for reliability in production environments.
+        </div>
+    </section>
+
+    <!-- Log Format & Sample -->
+    <section id="log-format">
+        <h2>📜 Log Output Format</h2>
+        <p>All entries follow the pattern: <strong>TIMESTAMP | LEVEL | MESSAGE</strong>. Below is a sample log file generated by <code>FileLogObserver</code>:</p>
+        <pre><code>2025-02-18 10:15:32,142 | INFO | === SESSION START: main_bash ===
+2025-02-18 10:15:32,155 | INFO | EXECUTING: ls -la --color=auto
+2025-02-18 10:15:32,287 | INFO | RESULT: SUCCESS | DURATION: 0.1320s | STDOUT: total 48 drwxr-xr-x 12 user staff 384 Feb 18 10:15 . drwxr-xr-x...
+2025-02-18 10:15:34,002 | INFO | EXECUTING: git status --short
+2025-02-18 10:15:34,211 | INFO | RESULT: SUCCESS | DURATION: 0.2090s | STDOUT: M README.md ?? new_script.py...
+2025-02-18 10:15:36,100 | INFO | === SESSION ENDED SUCCESSFULLY ===
+2025-02-18 10:17:01,421 | ERROR | SYSTEM ERROR: Failed to read environment | Detail: OSError(2, 'No such file')</code></pre>
+        <p><strong>Fields:</strong> <code>asctime</code> (YYYY-MM-DD HH:MM:SS,ms), <code>levelname</code> (INFO/ERROR), and the descriptive message. The stdout snippet is trimmed to 100 characters to keep logs manageable.</p>
+        <hr>
+        <h3>📎 Additional Implementation Notes</h3>
+        <ul>
+            <li><strong>UTF-8 encoding</strong> ensures full Unicode support for command outputs.</li>
+            <li><strong>No console propagation:</strong> <code>self.logger.propagate = False</code> prevents logs from appearing in the terminal unless other handlers are added.</li>
+            <li><strong>Duplicate handler prevention:</strong> The constructor explicitly clears any existing handlers from previous observer instances, avoiding double writes.</li>
+            <li><code>Path</code> object from <code>pathlib</code> is used to store <code>log_path</code> (flexible cross-platform path handling).</li>
+            <li><code>CommandResult</code> must contain <code>return_code</code>, <code>execution_time</code>, <code>standard_output</code>, and an <code>is_success()</code> method (convention).</li>
+        </ul>
+    </section>
+
+    <!-- Footer / reference -->
+    <footer style="margin-top: 2rem; font-size: 0.8rem; color: #64748b; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+        <p><code>FileLogObserver</code> — Part of shell instrumentation framework. Compatible with any shell implementation that follows the Observer pattern. Log file location: configurable via constructor.</p>
+        <p>Documentation generated for internal developer reference. All CSS styles adhere to provided design system.</p>
+    </footer>
+</div>
+
+<!-- Smooth scrolling + active nav highlight (basic vanilla JS) -->
+<script>
+    (function() {
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('.sidebar nav a');
+        function setActiveLink() {
+            let current = '';
+            const scrollPos = window.scrollY + 120;
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionBottom = sectionTop + section.offsetHeight;
+                if (scrollPos >= sectionTop && scrollPos < sectionBottom) {
+                    current = section.getAttribute('id');
+                }
+            });
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                const href = link.getAttribute('href').substring(1);
+                if (href === current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        window.addEventListener('scroll', setActiveLink);
+        window.addEventListener('load', setActiveLink);
+        // smooth scroll for anchor clicks
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetEl = document.getElementById(targetId);
+                if (targetEl) {
+                    targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    history.pushState(null, null, `#${targetId}`);
+                }
+            });
+        });
+    })();
+</script>
+</body>
+</html>

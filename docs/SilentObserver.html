@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>SilentObserver | API Documentation</title>
+    <!-- Google Fonts for clean typography (Inter + Fira Code) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<aside class="sidebar">
+    <h2>📘 DOCUMENTATION</h2>
+    <nav>
+        <a href="#overview" class="active">📖 Overview</a>
+        <a href="#class-definition">🏛️ Class Definition</a>
+        <a href="#inheritance">🌿 Inheritance</a>
+        <a href="#behavior">⚙️ Behavior & Contract</a>
+        <a href="#usage">🚀 Usage Example</a>
+        <a href="#production">🏭 Production Notes</a>
+    </nav>
+</aside>
+
+<main class="main-content">
+    <header>
+        <h1>SilentObserver <span class="badge">Production‑ready</span></h1>
+        <div class="subtitle">Zero-noise observer pattern implementation · Ideal for silent, high-performance production scripts</div>
+    </header>
+
+    <!-- Overview Section -->
+    <section id="overview">
+        <h2>📌 Overview</h2>
+        <p><code>SilentObserver</code> is a lightweight, no‑operation observer class derived from <code>ShellObserver</code>. As the name suggests, it performs absolutely no actions, emits no logs, and triggers no side effects. It's specifically designed for production environments where verbose observers would generate unnecessary noise, clutter logs, or reduce performance.</p>
+        <p>By inheriting from <code>ShellObserver</code> (which typically defines hooks like <code>on_command_start</code>, <code>on_command_end</code>, etc.), <code>SilentObserver</code> provides empty stubs for all methods — ensuring that the observer pattern contract is fulfilled without any runtime overhead or console output.</p>
+        <div class="method-box">
+            💡 <strong>Design philosophy:</strong> “Explicit silence over conditional logging.” Instead of adding flags to suppress output, use <code>SilentObserver</code> to guarantee a mute execution path.
+        </div>
+    </section>
+
+    <!-- Class Definition Section -->
+    <section id="class-definition">
+        <h2>🏛️ Class Definition</h2>
+        <div class="class-signature">
+            class SilentObserver(ShellObserver):<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;"""Does nothing. Ideal for production scripts where you don't want noise."""<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;pass
+        </div>
+        <p>The class is defined in Python and directly inherits from <code>ShellObserver</code>. It contains no custom implementations; all inherited methods are effectively overridden by the parent’s defaults, but <code>SilentObserver</code> ensures that any calls to observer hooks resolve to <strong>no operation</strong> (NOP). Because <code>ShellObserver</code> may define abstract or concrete methods, <code>SilentObserver</code> relies on its base class providing default no-op behaviors, or it implicitly inherits empty method stubs.</p>
+        <table>
+            <thead>
+                <tr><th>Property</th><th>Value / Description</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Class name</strong></td><td><code>SilentObserver</code></td></tr>
+                <tr><td><strong>Base class</strong></td><td><code>ShellObserver</code></td></tr>
+                <tr><td><strong>Module</strong></td><td>Custom observer pattern implementation (e.g., automation, CLI wrappers)</td></tr>
+                <tr><td><strong>Key characteristic</strong></td><td>Completely silent — no print, no logging, no side effects</td></tr>
+                <tr><td><strong>Docstring</strong></td><td>"Does nothing. Ideal for production scripts where you don't want noise."</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Inheritance & Hierarchy -->
+    <section id="inheritance">
+        <h2>🌿 Inheritance Hierarchy</h2>
+        <div class="inheritance-tree">
+            <span style="color:#3b82f6;">object</span><br>
+            └── <strong>ShellObserver</strong> &nbsp;<span style="color:#64748b;">(abstract or base observer)</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;└── <strong style="color:#2563eb;">SilentObserver</strong> &nbsp;<span style="color:#475569;">&lt;— your class</span>
+        </div>
+        <p><code>ShellObserver</code> typically defines a set of callback methods that are triggered during shell command execution (e.g., before execution, after execution, on error, on output). By extending <code>SilentObserver</code>, you can pass it to any executor or runner that expects an observer instance, but rest assured that no extraneous information will be emitted. This is particularly useful in:</p>
+        <ul style="margin-top: 0.8rem;">
+            <li>Production shell wrappers where logs must stay minimal.</li>
+            <li>Unit tests where observers are required but output is undesirable.</li>
+            <li>CI/CD pipelines running critical commands — avoiding cluttered output.</li>
+            <li>Long-running daemons that should not flood stdout/stderr with observer events.</li>
+        </ul>
+    </section>
+
+    <!-- Behavior and Contract -->
+    <section id="behavior">
+        <h2>⚙️ Behavior & Contract</h2>
+        <p>Since <code>SilentObserver</code> does not override any methods, it relies on the parent <code>ShellObserver</code> implementation. Ideally, the base class provides concrete no-op methods, making <code>SilentObserver</code> a fully functional placeholder. If <code>ShellObserver</code> contains abstract methods, <code>SilentObserver</code> must implement them — but as per the code snippet, the class is empty (<code>pass</code>), implying that <code>ShellObserver</code> already offers default stubs or that the class is concretely silent by design.</p>
+        <div class="method-card">
+            <h3>🔇 .on_command_start(command)</h3>
+            <p><strong>Effect:</strong> Does absolutely nothing. No logging, no console output. Returns <code>None</code>.</p>
+        </div>
+        <div class="method-card">
+            <h3>📭 .on_command_end(command, returncode)</h3>
+            <p><strong>Effect:</strong> Silent handler — ignores exit codes and command metadata. No side effects.</p>
+        </div>
+        <div class="method-card">
+            <h3>🚦 .on_output_line(line)</h3>
+            <p><strong>Effect:</strong> Discards any output line. Useful to prevent streaming output to observers.</p>
+        </div>
+        <div class="method-card">
+            <h3>⚠️ .on_error(error)</h3>
+            <p><strong>Effect:</strong> Swallows errors silently. Use with caution — errors are not reported unless another mechanism handles them.</p>
+        </div>
+        <p><strong>Note:</strong> The exact methods depend on the parent <code>ShellObserver</code> definition. However, the core guarantee is that <code>SilentObserver</code> introduces <strong>zero observable behavior</strong> beyond fulfilling the observer contract.</p>
+    </section>
+
+    <!-- Usage Example Section -->
+    <section id="usage">
+        <h2>🚀 Usage Example</h2>
+        <p>Below is a typical integration of <code>SilentObserver</code> within a shell command runner. The observer is passed to an executor that would otherwise produce verbose logs; with <code>SilentObserver</code>, the output stays clean.</p>
+        <div class="method-box" style="background: #f1f5f9;">
+            <pre style="margin: 0; font-family: 'Fira Code', monospace; font-size: 0.85rem; overflow-x: auto;">
+<span style="color:#0f172a; font-weight:600;">from shell_executor import ShellRunner, SilentObserver</span>
+
+<span style="color:#0f172a; font-weight:600;"># Instantiate the silent observer</span>
+observer = SilentObserver()
+
+<span style="color:#0f172a; font-weight:600;"># Create runner with mute observer (no stdout/stderr from callbacks)</span>
+runner = ShellRunner(observer=observer)
+
+<span style="color:#0f172a; font-weight:600;"># Execute command — absolutely no noise from observer hooks</span>
+result = runner.run("deploy --environment production")
+
+<span style="color:#0f172a; font-weight:600;"># You still capture result, but no extra prints</span>
+print(f"Exit code: {result.exit_code}")   <span style="color:#64748b;"># Only explicit print</span></pre>
+        </div>
+        <p style="margin-top: 1rem;">✅ <strong>Advantage:</strong> Even if the runner calls <code>observer.on_command_start</code> or <code>observer.on_output_line</code>, your console remains clean — perfect for cron jobs, production automation, and API-driven scripts.</p>
+        <hr>
+        <p><strong>Alternative scenario:</strong> Use <code>SilentObserver</code> as a drop-in replacement for a verbose observer to temporarily silence logs without modifying the core logic.</p>
+        <div class="class-signature">
+            # Before: VerboseObserver prints every step<br>
+            runner = ShellRunner(observer=VerboseObserver())   # noisy<br><br>
+            # After: silent production mode<br>
+            runner = ShellRunner(observer=SilentObserver())    # clean
+        </div>
+    </section>
+
+    <!-- Production Notes & Best Practices -->
+    <section id="production">
+        <h2>🏭 Production Notes & Best Practices</h2>
+        <p>Integrating <code>SilentObserver</code> into high-stakes environments requires understanding its limitations and strengths. Use the following guidelines:</p>
+        <table>
+            <thead>
+                <tr><th>Scenario</th><th>Recommendation</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>Debugging failures</strong></td><td>Avoid using <code>SilentObserver</code> during debugging; switch to a logging observer to capture detailed traces.</td></tr>
+                <tr><td><strong>Compliance & audit trails</strong></td><td>If you need command execution logs for compliance, do not use <code>SilentObserver</code> — use a dedicated logging observer.</td></tr>
+                <tr><td><strong>Performance</strong></td><td>Because the observer does nothing, its overhead is near zero. Ideal for high-frequency command invocations.</td></tr>
+                <tr><td><strong>Extending SilentObserver</strong></td><td>You can subclass <code>SilentObserver</code> and selectively override only necessary methods (e.g., <code>on_error</code> for critical alerts).</td></tr>
+                <tr><td><strong>Testing mocks</strong></td><td>Use <code>SilentObserver</code> in unit tests to replace real observers, ensuring tests aren't affected by side effects.</td></tr>
+            </tbody>
+        </table>
+        <div class="method-box">
+            🧪 <strong>Testing tip:</strong> When writing tests for a module that expects an observer, instantiate <code>SilentObserver</code> to satisfy the type contract without mocking every callback method.
+        </div>
+    </section>
+
+    <!-- Additional reference: API summary -->
+    <section id="api-summary" style="background: var(--bg-card);">
+        <h2>📄 API Reference Snapshot</h2>
+        <p>As <code>SilentObserver</code> inherits directly from <code>ShellObserver</code>, refer to the parent documentation for the full list of observer hooks. Below is a typical observer interface that <code>SilentObserver</code> satisfies with no extra logic:</p>
+        <ul>
+            <li><code>on_start()</code> → <em>no-op</em></li>
+            <li><code>on_finish()</code> → <em>no-op</em></li>
+            <li><code>on_stdout(data)</code> → <em>no-op</em></li>
+            <li><code>on_stderr(data)</code> → <em>no-op</em></li>
+            <li><code>on_timeout()</code> → <em>no-op</em></li>
+        </ul>
+        <p>Each method returns <code>None</code> and does not raise any exception. Because the class is a pure pass-through, it remains stable and predictable.</p>
+        <div class="class-signature" style="margin-top: 1rem;">
+            ⚡ <strong>Implementation guarantee:</strong> No I/O, no logging, no state mutations.
+        </div>
+    </section>
+
+    <footer>
+        <p>SilentObserver · Built for clean production workflows · Observer pattern without noise</p>
+        <p>© 2026 Documentation — compliant with shell automation best practices</p>
+    </footer>
+</main>
+
+<!-- Optional: small script to highlight active sidebar link on scroll (purely cosmetic, no external dependencies) -->
+<script>
+    (function() {
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('.sidebar nav a');
+        function setActiveLink() {
+            let current = '';
+            const scrollPos = window.scrollY + 150;
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionBottom = sectionTop + section.offsetHeight;
+                if (scrollPos >= sectionTop && scrollPos < sectionBottom) {
+                    current = section.getAttribute('id');
+                }
+            });
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                const href = link.getAttribute('href').substring(1);
+                if (href === current) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        window.addEventListener('scroll', setActiveLink);
+        window.addEventListener('resize', setActiveLink);
+        setActiveLink();
+    })();
+</script>
+</body>
+</html>

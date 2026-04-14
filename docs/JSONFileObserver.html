@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>JSONFileObserver | Shell Auditor Documentation</title>
+    <!-- Preconnect for Google Fonts & improved performance -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<aside class="sidebar">
+    <h2>📄 Documentation</h2>
+    <nav>
+        <a href="#overview" class="active">📌 Overview</a>
+        <a href="#class-json">🧩 JSONFileObserver</a>
+        <a href="#constructor">⚙️ Constructor</a>
+        <a href="#methods">🔧 Core Methods</a>
+        <a href="#events">📡 Event Handlers</a>
+        <a href="#data-format">📊 JSON Structure</a>
+        <a href="#usage">💡 Usage Example</a>
+    </nav>
+</aside>
+
+<main class="main-content">
+    <header>
+        <h1>JSONFileObserver <span class="class-badge">ShellObserver · Auditor</span></h1>
+        <div class="subtitle">Real‑time shell activity recording → structured JSON audit trail for compliance, analysis & debugging</div>
+    </header>
+
+    <!-- Overview Section -->
+    <section id="overview">
+        <h2>📌 Overview</h2>
+        <p><code>JSONFileObserver</code> is a concrete implementation of <code>ShellObserver</code> that <strong>records all shell interactions</strong> — commands, context mutations, and internal errors — into a persistent JSON file. Designed for <strong>technical auditing</strong>, post‑incident forensics, and data analytics pipelines.</p>
+        <p>Every event is timestamped (Unix epoch) and stored with rich metadata. The observer automatically initialises the log file and safely handles JSON read/write operations, making it ideal for long‑running shell automation frameworks.</p>
+        <div class="method-card" style="border-left-color: #10b981;">
+            <h3>✨ Key features</h3>
+            <p>✔ Non‑intrusive event recording &nbsp;|&nbsp; ✔ Human‑readable JSON (indented) &nbsp;|&nbsp; ✔ Thread‑safe file operations &nbsp;|&nbsp; ✔ Error resilience &nbsp;|&nbsp; ✔ Context change tracking</p>
+        </div>
+    </section>
+
+    <!-- Class Inheritance & Purpose -->
+    <section id="class-json">
+        <h2>🧩 JSONFileObserver <span style="font-size:0.9rem;">extends ShellObserver</span></h2>
+        <p><strong>Purpose:</strong> Ideal for technical auditing, compliance logging (SOC2, PCI), and generating structured datasets for ML anomaly detection or shell behaviour analysis.</p>
+        <p>The observer stores a list of event entries in a JSON file. Each event is appended after reading the existing log, preventing data corruption and ensuring audit integrity.</p>
+        <table>
+            <thead>
+                <tr><th>Attribute</th><th>Type</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>log_path</code></td><td><code>Path</code></td><td>Filesystem path to the audit JSON file. Defaults to <code>"shell_audit.json"</code>.</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Constructor documentation -->
+    <section id="constructor">
+        <h2>⚙️ Constructor</h2>
+        <div class="method-card">
+            <h3>__init__(log_path: str = "shell_audit.json")</h3>
+            <p>Initializes the observer with a target log file path. If the file does not exist, it creates an empty JSON array (<code>[]</code>) to guarantee a valid starting state.</p>
+            <div class="method-signature">def __init__(self, log_path: str = "shell_audit.json") -> None</div>
+        </div>
+        <p><strong>Behaviour:</strong> On creation, calls <code>_write_logs([])</code> when the log file is missing. This ensures the first read never fails due to missing file.</p>
+    </section>
+
+    <!-- Core internal methods & public event handlers -->
+    <section id="methods">
+        <h2>🔧 Core Methods (Internal & Public)</h2>
+        <p>The class provides both private helper methods for JSON persistence and public observer callbacks required by the <code>ShellObserver</code> interface.</p>
+        
+        <div class="method-card">
+            <h3>_read_logs() → List[Dict[str, Any]]</h3>
+            <p>Reads the entire JSON log file and returns a list of event entries. Handles <code>JSONDecodeError</code> or <code>FileNotFoundError</code> gracefully by returning an empty list, preventing crashes from corrupted or missing files.</p>
+        </div>
+        
+        <div class="method-card">
+            <h3>_write_logs(logs: List[Dict[str, Any]])</h3>
+            <p>Writes the complete log list to the JSON file with indentation (<code>indent=4</code>) and UTF‑8 encoding. Overwrites the existing file atomically (via write mode).</p>
+        </div>
+        
+        <div class="method-card">
+            <h3>_append_entry(entry: Dict[str, Any])</h3>
+            <p>Helper that reads current logs, appends a new entry, and writes back the updated array. Ensures all events are persisted sequentially.</p>
+        </div>
+    </section>
+
+    <!-- Event Handlers: on_command_result, on_context_change, on_error -->
+    <section id="events">
+        <h2>📡 Event Handlers (ShellObserver Interface)</h2>
+        <p>These methods are automatically triggered by the shell environment when commands are executed, context variables change, or internal errors occur.</p>
+        
+        <div class="method-card">
+            <h3>on_command_result(result: CommandResult)</h3>
+            <p>Records a shell command execution. Captures command string, success status, exit code, execution duration, stdout length, and stderr (if any).</p>
+            <div class="method-signature">→ event: "command_executed"</div>
+        </div>
+        
+        <div class="method-card">
+            <h3>on_context_change(key: str, value: Any)</h3>
+            <p>Triggered when shell context (environment variable or state) mutates. Stores the changed key and its string representation.</p>
+            <div class="method-signature">→ event: "context_mutation"</div>
+        </div>
+        
+        <div class="method-card">
+            <h3>on_error(message: str, error: Optional[Exception] = None)</h3>
+            <p>Logs internal errors from the observer or shell framework. Includes a human‑readable message and optional exception details.</p>
+            <div class="method-signature">→ event: "internal_error"</div>
+        </div>
+        
+        <p><strong>Event summary:</strong> Each event includes a Unix <code>timestamp</code> and a unique <code>event</code> type to differentiate between command, mutation, or error logs.</p>
+        <div class="event-grid">
+            <span class="event-badge">command_executed</span>
+            <span class="event-badge">context_mutation</span>
+            <span class="event-badge">internal_error</span>
+        </div>
+    </section>
+
+    <!-- JSON Data Format Specification -->
+    <section id="data-format">
+        <h2>📊 JSON Log Structure & Schema</h2>
+        <p>Each audit file contains a JSON array of event objects. Below are the detailed fields per event type.</p>
+        
+        <h3>📟 Command Executed Event</h3>
+        <pre><code>{
+  "timestamp": 1712245678.9123,
+  "event": "command_executed",
+  "command": "git status",
+  "success": true,
+  "exit_code": 0,
+  "duration": 0.1245,
+  "stdout_len": 842,
+  "stderr": null
+}</code></pre>
+        
+        <h3>🔄 Context Mutation Event</h3>
+        <pre><code>{
+  "timestamp": 1712245680.451,
+  "event": "context_mutation",
+  "change": {
+    "current_directory": "/home/user/project"
+  }
+}</code></pre>
+
+        <h3>⚠️ Internal Error Event</h3>
+        <pre><code>{
+  "timestamp": 1712245699.123,
+  "event": "internal_error",
+  "message": "Failed to write log entry",
+  "exception": "PermissionError(13, 'Access denied')"
+}</code></pre>
+        <p><strong>Note:</strong> The <code>stderr</code> field captures trimmed error output; <code>duration</code> is rounded to 4 decimals; <code>exception</code> is only present if an Exception object is provided.</p>
+    </section>
+
+    <!-- Practical usage example -->
+    <section id="usage">
+        <h2>💡 Usage Example (Python)</h2>
+        <p>Integrate <code>JSONFileObserver</code> into your shell automation or custom shell environment. All events are automatically persisted.</p>
+        <pre><code>from shell_observer import ShellObserver, CommandResult   # hypothetical framework
+from json_file_observer import JSONFileObserver
+from pathlib import Path
+
+# Initialize observer with custom log path
+auditor = JSONFileObserver(log_path="logs/audit_trail.json")
+
+# Simulated shell event: command result
+cmd_result = CommandResult(
+    command_sent="ls -la",
+    return_code=0,
+    execution_time=0.0234,
+    standard_output="total 48\ndrwxr-xr-x ...",
+    standard_error=""
+)
+auditor.on_command_result(cmd_result)
+
+# Context change (e.g., environment variable)
+auditor.on_context_change("USER_MODE", "debug")
+
+# Log an internal error
+auditor.on_error("JSON serialization warning", None)
+
+# The log file "logs/audit_trail.json" now contains 3 structured events.
+print(f"Audit saved at: {auditor.log_path}")</code></pre>
+        <p>✨ The observer works seamlessly with any shell that implements the <code>ShellObserver</code> protocol — whether it's a custom REPL, remote command executor, or interactive testing harness.</p>
+    </section>
+
+    <!-- Advanced Note: durability & concurrency -->
+    <section id="advanced">
+        <h2>⚡ Durability & Concurrency Notes</h2>
+        <p>Since each event triggers a full read+write cycle, <code>JSONFileObserver</code> is best suited for low‑to‑medium frequency event streams (typical shell sessions). For high‑throughput environments, consider wrapping file writes with locking mechanisms. The current implementation uses standard file I/O, which is atomic for typical use cases on POSIX systems when write operations are small. The JSON formatting ensures manual inspection and compatibility with data pipelines.</p>
+        <div class="method-card" style="border-left-color: #f59e0b;">
+            <h3>📁 File Initialization Strategy</h3>
+            <p>If the log file doesn’t exist on <code>__init__</code>, the observer writes an empty JSON array <code>[]</code>. This prevents race conditions on first read and provides a valid schema from the start.</p>
+        </div>
+    </section>
+    
+    <footer>
+        <p>JSONFileObserver — Part of ShellAuditor Suite | Designed for observability, compliance & data analysis</p>
+        <p style="font-size: 0.75rem;">© Open Source Documentation | MIT style</p>
+    </footer>
+</main>
+
+<!-- smooth scroll for anchor links (preserves active state highlighting) -->
+<script>
+    (function() {
+        const sidebarLinks = document.querySelectorAll('.sidebar nav a');
+        const sections = Array.from(document.querySelectorAll('section[id]'));
+        
+        function updateActiveLink() {
+            let currentSectionId = '';
+            const scrollPos = window.scrollY + 120;  // offset for header
+            for (let section of sections) {
+                const sectionTop = section.offsetTop;
+                const sectionBottom = sectionTop + section.offsetHeight;
+                if (scrollPos >= sectionTop && scrollPos < sectionBottom) {
+                    currentSectionId = section.getAttribute('id');
+                    break;
+                }
+            }
+            sidebarLinks.forEach(link => {
+                link.classList.remove('active');
+                const href = link.getAttribute('href').substring(1);
+                if (href === currentSectionId) {
+                    link.classList.add('active');
+                } else if (!currentSectionId && href === 'overview') {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', updateActiveLink);
+        window.addEventListener('load', updateActiveLink);
+        
+        // smooth scroll for navigation clicks
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    history.pushState(null, null, `#${targetId}`);
+                    updateActiveLink();
+                }
+            });
+        });
+        
+        // initial active check after hash
+        if(window.location.hash) {
+            const id = window.location.hash.substring(1);
+            const el = document.getElementById(id);
+            if(el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+    })();
+</script>
+</body>
+</html>

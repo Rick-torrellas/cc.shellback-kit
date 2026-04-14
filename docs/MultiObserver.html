@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>MultiObserver | Composite Pattern Documentation</title>
+    <!-- Google Fonts for better typography, matching the design system -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>📘 Documentation</h2>
+    <nav>
+        <a href="#overview" class="active">Overview</a>
+        <a href="#class-diagram">Composite Pattern</a>
+        <a href="#constructor">Constructor</a>
+        <a href="#methods">Observer Methods</a>
+        <a href="#usage">Usage Example</a>
+        <a href="#observer-interface">ShellObserver</a>
+    </nav>
+</div>
+
+<div class="main-content">
+    <header>
+        <h1>
+            MultiObserver 
+            <span class="class-badge">COMPOSITE PATTERN</span>
+        </h1>
+        <p class="subtitle">
+            A composite observer that manages multiple <code>ShellObserver</code> instances and 
+            broadcasts every shell lifecycle event to all registered observers.
+        </p>
+    </header>
+
+    <!-- Overview Section -->
+    <section id="overview">
+        <h2>📖 Class Overview</h2>
+        <p>
+            <code>MultiObserver</code> is a concrete implementation of the <strong>Composite pattern</strong> in the observer ecosystem. 
+            It extends <code>ShellObserver</code> and acts as a collection (or a composite) that can hold any number of child observers. 
+            When any shell event occurs (session start/end, context change, command execution, errors), 
+            <code>MultiObserver</code> iterates through its internal list and delegates the notification to every registered observer.
+        </p>
+        <div class="inheritance">
+            🧬 <strong>Inheritance:</strong> <code>ShellObserver</code> (abstract base) → <code>MultiObserver</code>
+        </div>
+        <p>
+            This design allows you to treat a group of observers as a single entity, making it easy to attach or detach 
+            entire sets of observers without modifying core event logic.
+        </p>
+        <div class="note">
+            💡 <strong>Composite Pattern Benefit</strong>: Use <code>MultiObserver</code> to combine logging, metrics, debugging, 
+            and real-time monitoring observers — all triggered by one notification call.
+        </div>
+    </section>
+
+    <!-- Composite Pattern Explanation -->
+    <section id="class-diagram">
+        <h2>🧩 Composite Pattern in Action</h2>
+        <p>
+            <strong>Component:</strong> <code>ShellObserver</code> (abstract observer interface)<br>
+            <strong>Leaf:</strong> Individual concrete observers (e.g., <code>LoggingObserver</code>, <code>MetricsObserver</code>)<br>
+            <strong>Composite:</strong> <code>MultiObserver</code> — manages child observers and forwards all events to them.
+        </p>
+        <table>
+            <thead>
+                <tr><th>Role</th><th>Class / Example</th><th>Behavior</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Observer Interface</td><td><code>ShellObserver</code></td><td>Declares event methods: <code>on_session_start</code>, <code>on_command_result</code>, etc.</td></tr>
+                <tr><td>Leaf Observer</td><td><code>FileLogger</code>, <code>ConsoleReporter</code></td><td>Implements actual reaction logic.</td></tr>
+                <tr><td>Composite Observer</td><td><code>MultiObserver</code></td><td>Stores observers, forwards notifications.</td></tr>
+            </tbody>
+        </table>
+        <p>
+            The <code>MultiObserver</code> itself is a <code>ShellObserver</code>, meaning composites can be nested, 
+            offering hierarchical observer structures.
+        </p>
+    </section>
+
+    <!-- Constructor -->
+    <section id="constructor">
+        <h2>⚙️ Constructor & Initialization</h2>
+        <div class="method-card">
+            <h3>__init__(observers: List[ShellObserver] = None)</h3>
+            <p>Initializes a new composite observer that holds an optional initial list of observers.</p>
+        </div>
+        <div class="method-box">
+            <strong>Parameters:</strong>
+            <ul>
+                <li><code>observers</code> (List[ShellObserver], optional) – Prepopulated list of observer instances. Defaults to an empty list.</li>
+            </ul>
+            <strong>Internal State:</strong> <code>self.observers</code> – list that stores all child observers.
+        </div>
+        <pre><code># Example: create empty composite
+multi = MultiObserver()
+
+# Or with initial observers
+multi = MultiObserver([console_observer, file_observer])</code></pre>
+    </section>
+
+    <!-- Methods: Management + Event Forwarding -->
+    <section id="methods">
+        <h2>🔁 Public Methods</h2>
+        <p>
+            <code>MultiObserver</code> implements two categories of methods: <strong>observer management</strong> and 
+            <strong>event notification forwarding</strong> (fulfilling the <code>ShellObserver</code> contract).
+        </p>
+
+        <h3 style="margin-top: 1.5rem;">➕ Observer Management</h3>
+        <div class="method-card">
+            <h3>add_observer(observer: ShellObserver) -> None</h3>
+            <p>Adds a new <code>ShellObserver</code> to the internal collection. The added observer will receive future shell events.</p>
+        </div>
+
+        <h3 style="margin-top: 1.5rem;">📡 Event Forwarding (ShellObserver Implementation)</h3>
+        <div class="method-card">
+            <h3>on_session_start(shell_name: str)</h3>
+            <p>Invoked when a shell session begins. Notifies all registered observers by calling their <code>on_session_start</code>.</p>
+        </div>
+        <div class="method-card">
+            <h3>on_session_end(shell_name: str, error: Exception = None)</h3>
+            <p>Signals the end of a shell session. Propagates the event (and optional error) to every child observer.</p>
+        </div>
+        <div class="method-card">
+            <h3>on_context_change(key: str, value: Any)</h3>
+            <p>Broadcasts context variable changes (e.g., environment or shell state) to all managed observers.</p>
+        </div>
+        <div class="method-card">
+            <h3>on_command_start(executable: str, final_args: List[str])</h3>
+            <p>Notifies all observers that a command is about to execute, providing the executable path and its arguments.</p>
+        </div>
+        <div class="method-card">
+            <h3>on_command_result(result: CommandResult)</h3>
+            <p>Forwards the command execution result (exit code, stdout/stderr, etc.) to each observer in the composite.</p>
+        </div>
+        <div class="method-card">
+            <h3>on_error(message: str, error: Exception = None)</h3>
+            <p>Distributes error notifications to all child observers, useful for centralized error handling across plugins.</p>
+        </div>
+    </section>
+
+    <!-- Usage Example: how to use MultiObserver -->
+    <section id="usage">
+        <h2>💻 Usage Example (Python)</h2>
+        <p>
+            The following example demonstrates how to use <code>MultiObserver</code> to combine two different observers:
+            a simple console logger and a mock metrics collector. The composite observer is attached to a shell 
+            controller (hypothetical) and all events are broadcasted simultaneously.
+        </p>
+        <pre><code>from typing import List, Any
+from dataclasses import dataclass
+
+# Mock ShellObserver base and CommandResult (for demonstration)
+class ShellObserver:
+    def on_session_start(self, shell_name: str): pass
+    def on_session_end(self, shell_name: str, error: Exception = None): pass
+    def on_context_change(self, key: str, value: Any): pass
+    def on_command_start(self, executable: str, final_args: List[str]): pass
+    def on_command_result(self, result: 'CommandResult'): pass
+    def on_error(self, message: str, error: Exception = None): pass
+
+@dataclass
+class CommandResult:
+    command: str
+    exit_code: int
+    stdout: str
+    stderr: str
+
+# Concrete observer 1: prints events to console
+class ConsoleObserver(ShellObserver):
+    def on_session_start(self, shell_name: str):
+        print(f"[Console] Session '{shell_name}' started")
+    def on_command_result(self, result: CommandResult):
+        print(f"[Console] Command '{result.command}' finished with code {result.exit_code}")
+    def on_error(self, message: str, error: Exception = None):
+        print(f"[Console] Error: {message} | {error}")
+
+# Concrete observer 2: counts commands
+class CounterObserver(ShellObserver):
+    def __init__(self):
+        self.command_count = 0
+    def on_command_start(self, executable: str, final_args: List[str]):
+        self.command_count += 1
+        print(f"[Counter] commands seen so far: {self.command_count}")
+    def on_session_end(self, shell_name: str, error: Exception = None):
+        print(f"[Counter] total commands in session: {self.command_count}")
+
+# ----- Using MultiObserver -----
+if __name__ == "__main__":
+    console = ConsoleObserver()
+    counter = CounterObserver()
+    
+    # Create composite observer and attach both
+    multi = MultiObserver([console, counter])
+    
+    # Simulate shell events
+    multi.on_session_start("bash")
+    multi.on_command_start("/bin/ls", ["ls", "-la"])
+    multi.on_command_result(CommandResult("ls -la", 0, "file1 file2", ""))
+    multi.on_command_start("/usr/bin/python", ["python", "--version"])
+    multi.on_command_result(CommandResult("python --version", 0, "Python 3.11", ""))
+    multi.on_error("Config file missing", None)
+    multi.on_session_end("bash")
+    
+    # Output will show both observers reacting to every event.
+    # The counter observer increments on command_start,
+    # ConsoleObserver prints each event line.</code></pre>
+        <div class="note">
+            🧪 <strong>Real-world scenario</strong>: Use MultiObserver to attach logging, performance metrics, 
+            and real-time dashboard updates simultaneously without coupling them together.
+        </div>
+    </section>
+
+    <!-- ShellObserver Interface Reference -->
+    <section id="observer-interface">
+        <h2>📋 ShellObserver Contract</h2>
+        <p>
+            The <code>MultiObserver</code> relies on the standard observer interface. Each child observer must implement 
+            the following methods. This design aligns with the <strong>Observer pattern</strong> and guarantees 
+            polymorphic event handling.
+        </p>
+        <table>
+            <thead><tr><th>Method</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>on_session_start(shell_name: str)</code></td><td>Triggered when a new shell session is initialized.</td></tr>
+                <tr><td><code>on_session_end(shell_name: str, error: Exception)</code></td><td>Called when the session terminates; may contain an error if abnormal exit.</td></tr>
+                <tr><td><code>on_context_change(key: str, value: Any)</code></td><td>Notifies observers about dynamic context updates (e.g., $PWD change).</td></tr>
+                <tr><td><code>on_command_start(executable: str, final_args: List[str])</code></td><td>Emitted just before a subprocess or shell command runs.</td></tr>
+                <tr><td><code>on_command_result(result: CommandResult)</code></td><td>Delivers the result of an executed command (including exit code, output).</td></tr>
+                <tr><td><code>on_error(message: str, error: Exception)</code></td><td>Broadcasts error events that occur during shell operations.</td></tr>
+            </tbody>
+        </table>
+        <p>
+            By implementing the same interface, <code>MultiObserver</code> transparently composes any number of observers 
+            and behaves exactly like any other <code>ShellObserver</code>.
+        </p>
+    </section>
+
+    <!-- Additional design notes -->
+    <section id="design-notes">
+        <h2>🎯 Design Highlights & Best Practices</h2>
+        <ul>
+            <li><strong>Open/Closed Principle</strong>: <code>MultiObserver</code> is closed for modification but open for extension — you can add new types of observers without altering the composite.</li>
+            <li><strong>Fail-Safe Iteration</strong>: The composite iterates over a list copy? The current implementation iterates directly over <code>self.observers</code>. For production, consider handling exceptions per observer so one failing observer doesn't break others.</li>
+            <li><strong>Dynamic Composition</strong>: Use <code>add_observer</code> to attach observers at runtime, making the system flexible.</li>
+            <li><strong>Nesting composites</strong>: Since <code>MultiObserver</code> inherits from <code>ShellObserver</code>, you can add a <code>MultiObserver</code> inside another <code>MultiObserver</code> for hierarchical grouping.</li>
+        </ul>
+        <div class="method-box">
+            💎 <strong>Note on exception handling</strong>: In the provided code, each observer's method is called directly. 
+            To ensure robustness, consider wrapping each call in a try/except block to prevent a faulty observer from 
+            interrupting notifications to others.
+        </div>
+    </section>
+
+    <footer style="margin-top: 2rem; padding: 1rem 0; border-top: 1px solid var(--border); font-size: 0.85rem; text-align: center; color: #64748b;">
+        MultiObserver — Composite Pattern Implementation · Pure Python observer aggregation · Documentation generated for ShellObserver ecosystem
+    </footer>
+</div>
+
+<!-- smooth scroll and active link highlight (simple) -->
+<script>
+    document.querySelectorAll('.sidebar nav a').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            const targetElement = document.getElementById(targetId);
+            if(targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth' });
+                document.querySelectorAll('.sidebar nav a').forEach(a => a.classList.remove('active'));
+                this.classList.add('active');
+            }
+        });
+    });
+    // Intersection Observer to update active state on scroll
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.sidebar nav a');
+    window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop - 100;
+            if(pageYOffset >= sectionTop) {
+                current = section.getAttribute('id');
+            }
+        });
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            const href = link.getAttribute('href').substring(1);
+            if(href === current) link.classList.add('active');
+        });
+    });
+</script>
+</body>
+</html>

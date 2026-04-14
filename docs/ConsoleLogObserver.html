@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConsoleLogObserver | API Documentation</title>
+    <!-- Google Fonts for clean typography (Inter & Fira Code) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <h2>DOCUMENTATION</h2>
+        <nav>
+            <a href="#overview" class="active">📖 Overview</a>
+            <a href="#class-definition">🏗️ Class Definition</a>
+            <a href="#methods">⚙️ Methods</a>
+            <a href="#usage-example">💡 Usage Example</a>
+            <a href="#behavior">🎯 Behavior & Output</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <header>
+            <h1>ConsoleLogObserver <span class="class-badge">ShellObserver</span></h1>
+            <div class="subtitle">Real-time console observer for command execution events</div>
+        </header>
+
+        <!-- Overview Section -->
+        <section id="overview">
+            <h2>📋 Overview</h2>
+            <p><code>ConsoleLogObserver</code> is a concrete implementation of the <strong>ShellObserver</strong> abstract base class. It provides live feedback directly to the terminal by printing detailed information about command execution lifecycle events. This observer is ideal for CLI tools, automation scripts, or any application where operators need real-time visibility into what commands are being executed and their outcomes.</p>
+            <div class="note">
+                💡 <strong>Purpose:</strong> Displays in the console what is happening in real time — from command start to final result with success/failure indicators and timing details.
+            </div>
+        </section>
+
+        <!-- Class Definition Section -->
+        <section id="class-definition">
+            <h2>🏗️ Class Hierarchy & Definition</h2>
+            <div class="signature">
+                class ConsoleLogObserver(ShellObserver)
+            </div>
+            <p><strong>Inheritance:</strong> <code>ConsoleLogObserver</code> extends the abstract observer <code>ShellObserver</code>. It overrides two key lifecycle methods to provide console logging behavior.</p>
+            
+            <h3 style="margin-top: 1.5rem;">🔰 Observer Methods Overridden</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Trigger</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>on_command_start</code></td>
+                        <td>Before command execution</td>
+                        <td>Notifies that a command is about to run, displaying the full command line.</td>
+                    </tr>
+                    <tr>
+                        <td><code>on_command_result</code></td>
+                        <td>After command finishes</td>
+                        <td>Processes the result: prints success with execution time or failure with return code and error details.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Methods Section with detailed cards -->
+        <section id="methods">
+            <h2>⚙️ Method Documentation</h2>
+            
+            <!-- Method: on_command_start -->
+            <div class="method-card">
+                <h3>🔹 on_command_start(executable, final_args)</h3>
+                <p><strong>Description:</strong> Called immediately before a shell command is executed. Outputs a user-friendly message indicating which command is being run. The method reconstructs the full command string from the executable and its arguments.</p>
+                <div class="method-box">
+                    <strong>📌 Parameters:</strong><br>
+                    &nbsp;&nbsp;&nbsp;• <code>executable</code> <em>(str)</em> – The executable name or path.<br>
+                    &nbsp;&nbsp;&nbsp;• <code>final_args</code> <em>(List[str])</em> – List of arguments passed to the executable.<br>
+                    <strong>📤 Returns:</strong> <code>None</code><br>
+                    <strong>🖨️ Output example:</strong> <code>🛠️  Executing: git commit -m "initial commit"</code>
+                </div>
+                <div class="note" style="margin-top: 0.75rem;">
+                    🧠 <strong>Implementation note:</strong> Joins <code>final_args</code> with spaces and prepends the emoji "🛠️" for visual clarity.
+                </div>
+            </div>
+
+            <!-- Method: on_command_result -->
+            <div class="method-card">
+                <h3>🔹 on_command_result(result: CommandResult)</h3>
+                <p><strong>Description:</strong> Handles the command result after execution finishes. Distinguishes between success and failure cases, providing formatted output with timing or error information.</p>
+                <div class="method-box">
+                    <strong>📌 Parameter:</strong><br>
+                    &nbsp;&nbsp;&nbsp;• <code>result</code> <em>(CommandResult)</em> – Object containing execution status, return code, execution time, standard error, and other metadata.<br>
+                    <strong>📤 Returns:</strong> <code>None</code><br>
+                </div>
+                <h4 style="margin: 1rem 0 0.5rem 0;">✅ Success branch</h4>
+                <p>If <code>result.is_success()</code> is <code>True</code>, prints: <code>✅ OK (X.XXXs)</code> where <code>X.XXX</code> is the execution time in seconds (formatted to 3 decimal places).</p>
+                <h4 style="margin: 1rem 0 0.5rem 0;">❌ Failure branch</h4>
+                <p>If the command fails, prints: <code>❌ FAIL (Code: {return_code})</code>. Additionally, if <code>result.standard_error</code> contains any content, it prints the stripped error message on a new line indented with <code>"   Error: "</code> prefix.</p>
+                <div class="note">
+                    ⏱️ <strong>Execution time:</strong> The <code>execution_time</code> attribute (float) represents the total duration of the command in seconds.
+                </div>
+            </div>
+        </section>
+
+        <!-- Usage Example Section (Interactive / Code demonstration) -->
+        <section id="usage-example">
+            <h2>💻 Usage Example</h2>
+            <p>Below is a practical demonstration of how <code>ConsoleLogObserver</code> integrates with a command executor. The observer subscribes to shell events and prints real-time logs to the console.</p>
+            
+            <div class="signature" style="background: #1e293b; color: #e2e8f0; overflow-x: auto;">
+                <pre style="margin: 0; font-family: 'Fira Code', monospace; font-size: 0.85rem;">
+<span style="color: #94a3b8;"># Assume existence of a ShellRunner or Subject that notifies observers</span>
+<span style="color: #facc15;">from shell_observer</span> <span style="color: #facc15;">import</span> ShellObserver, CommandResult
+<span style="color: #facc15;">from console_log_observer</span> <span style="color: #facc15;">import</span> ConsoleLogObserver
+
+<span style="color: #7dd3fc;"># Instantiate observer</span>
+observer = ConsoleLogObserver()
+
+<span style="color: #7dd3fc;"># Attach to a command executor (pseudocode)</span>
+executor.attach(observer)
+
+<span style="color: #7dd3fc;"># When executor runs a command like 'ls -la'</span>
+executor.run(<span style="color: #bef264;">"ls"</span>, [<span style="color: #bef264;">"-la"</span>])
+
+<span style="color: #7dd3fc;"># Console output would be:</span>
+<span style="color: #cbd5e1;"># 🛠️  Executing: ls -la</span>
+<span style="color: #cbd5e1;"># ✅ OK (0.023s)</span>
+
+<span style="color: #7dd3fc;"># In case of error (e.g., command not found):</span>
+executor.run(<span style="color: #bef264;">"invalid_cmd"</span>, [])
+
+<span style="color: #cbd5e1;"># Output:</span>
+<span style="color: #cbd5e1;"># 🛠️  Executing: invalid_cmd</span>
+<span style="color: #cbd5e1;"># ❌ FAIL (Code: 127)</span>
+<span style="color: #cbd5e1;">#    Error: command not found: invalid_cmd</span>
+                </pre>
+            </div>
+            <div class="note" style="margin-top: 1rem;">
+                🔍 <strong>Note:</strong> The observer does not modify command execution — it only logs events. The <code>CommandResult</code> object must be provided by the shell execution engine.
+            </div>
+        </section>
+
+        <!-- Behavior & Output Characteristics -->
+        <section id="behavior">
+            <h2>🎯 Real-time Behavior & Console Output</h2>
+            <p>The <code>ConsoleLogObserver</code> ensures that users are never left wondering about the progress of long-running or critical shell commands. Its behavior includes:</p>
+            <ul style="margin-bottom: 1rem;">
+                <li><strong>Immediate feedback</strong> – <code>on_command_start</code> fires before the command even begins, so the operator knows exactly what is being executed.</li>
+                <li><strong>Success / Failure distinction</strong> – Uses colored emojis (✅ / ❌) and clear language to indicate outcome.</li>
+                <li><strong>Performance metrics</strong> – Execution time in seconds helps identify slow commands.</li>
+                <li><strong>Error transparency</strong> – When a command fails, the standard error output is displayed with proper indentation, making debugging straightforward.</li>
+            </ul>
+
+            <h3>📊 Example Output Scenarios</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Scenario</th>
+                        <th>Console Output</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Successful command (<code>echo "Hello"</code>)</td>
+                        <td><code>🛠️  Executing: echo Hello<br>✅ OK (0.001s)</code></td>
+                    </tr>
+                    <tr>
+                        <td>Failed command (missing file)</td>
+                        <td><code>🛠️  Executing: cat missing.txt<br>❌ FAIL (Code: 1)<br>   Error: cat: missing.txt: No such file or directory</code></td>
+                    </tr>
+                    <tr>
+                        <td>Long-running process</td>
+                        <td><code>🛠️  Executing: sleep 2<br>✅ OK (2.004s)</code></td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="method-box" style="margin-top: 1rem;">
+                <strong>📌 Integration with ShellObserver Protocol</strong><br>
+                <code>ConsoleLogObserver</code> fulfills the observer contract by implementing required methods. It does not rely on any shared state, making it thread-safe for concurrent command executions (if the underlying executor supports it).
+            </div>
+        </section>
+
+        <!-- Additional details: attributes, dependencies -->
+        <section id="technical-notes" style="background: var(--bg-card);">
+            <h2>🔧 Technical Notes</h2>
+            <p><strong>Dependencies:</strong> This class expects a <code>CommandResult</code> object with at least the following attributes/methods:</p>
+            <ul>
+                <li><code>is_success()</code> → <code>bool</code></li>
+                <li><code>execution_time</code> → <code>float</code> (seconds)</li>
+                <li><code>return_code</code> → <code>int</code></li>
+                <li><code>standard_error</code> → <code>str</code> (may be empty)</li>
+            </ul>
+            <p><strong>Inherited from ShellObserver:</strong> The base class may define additional hooks (e.g., <code>on_command_end</code>), but <code>ConsoleLogObserver</code> only overrides the two methods relevant to its purpose. It can be extended further if needed.</p>
+            <hr>
+            <p><strong>✨ Design Philosophy:</strong> Minimal, non-intrusive logging. Each log entry is self-contained and uses common Unicode symbols for improved scannability. The observer does not raise exceptions and gracefully handles missing attributes (as per Python's duck typing).</p>
+        </section>
+
+        <!-- Footer / meta info -->
+        <footer style="margin-top: 2rem; text-align: center; font-size: 0.8rem; color: #94a3b8; border-top: 1px solid var(--border); padding-top: 2rem;">
+            <p>ConsoleLogObserver v1.0 — Real-time shell observer for command execution events. Compatible with any ShellObserver-based notification system.</p>
+        </footer>
+    </main>
+
+    <!-- Optional: smooth scroll behavior for anchor links -->
+    <script>
+        // Simple scroll to section with active sidebar highlight
+        document.querySelectorAll('.sidebar nav a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    // Update active class
+                    document.querySelectorAll('.sidebar nav a').forEach(a => a.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+        
+        // Optional: update active state on scroll (simple highlight for demo)
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('.sidebar nav a');
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 100;
+                const sectionBottom = sectionTop + section.offsetHeight;
+                if (scrollY >= sectionTop && scrollY < sectionBottom) {
+                    current = section.getAttribute('id');
+                }
+            });
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                const href = link.getAttribute('href').substring(1);
+                if (href === current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
